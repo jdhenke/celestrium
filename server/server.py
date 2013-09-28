@@ -54,6 +54,49 @@ class ConceptProvider(object):
           })
     return newNodesList, crossLinks, selfLinks
 
+class FacebookProvider(object):
+  def __init__(self):
+    self.graph = {}
+    with open("data/facebook_combined.txt") as f:
+      for line in f:
+        a, b = line.strip().split(" ")
+        self.graph.setdefault(a, set())
+        self.graph.setdefault(b, set())
+        self.graph[a].add(b)
+        self.graph[b].add(a)
+  def get_nodes(self):
+    return list(self.graph.keys())
+  def get_edges(self, node, otherNodes):
+    return [(0.9 if x in selfgraph[node] else 0) for x in otherNodes]
+  def get_related_nodes(self, selectedNodes, allNodes, minStrength):
+    seen = set()
+    for i, selectedNode in enumerate(selectedNodes):
+      for relatedNode in self.graph[selectedNode]:
+        if relatedNode not in seen and relatedNode not in selectedNodes:
+          seen.add(relatedNode)
+    newNodesList = list(seen)
+    crossLinks = []
+    for i, n1 in enumerate(selectedNodes):
+      for j, n2 in enumerate(newNodesList):
+        if n2 in self.graph[n1]:
+          crossLinks.append({
+            "source": i,
+            "target": j,
+            "strength": 0.9,
+          })
+    selfLinks = []
+    for i in xrange(len(newNodesList) - 1):
+      for j in xrange(i + 1, len(newNodesList)):
+        n1 = newNodesList[i]
+        n2 = newNodesList[j]
+        if n2 in self.graph[n1]:
+          selfLinks.append({
+            "source": i,
+            "target": j,
+            "strength": 0.9,
+          })
+    return newNodesList, crossLinks, selfLinks
+
 class Server(object):
 
   _cp_config = {'tools.staticdir.on' : True,
@@ -62,7 +105,7 @@ class Server(object):
                 }
 
   def __init__(self):
-    self.provider = ConceptProvider(100)
+    self.provider = FacebookProvider() # ConceptProvider(100)
 
   @cherrypy.expose
   @cherrypy.tools.json_out()
