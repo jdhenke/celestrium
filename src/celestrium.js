@@ -109,6 +109,31 @@ function($, GraphModel, GraphView, NodeSearch, Selection, GraphStatsView, ForceS
         this.$el.append(tr);
       }
 
+      if (true) // only for assertions
+        (function() {
+
+          dataProvider.minThreshold = 0.94;
+
+          // color nodes based on truth
+          graphView.on("enter:node", function(enterSelection) {
+            var color = d3.scale.linear()
+              .domain([0, 1])
+              .range(["red", "green"]);
+            var f = function(n) {return color(n.truth);};
+            enterSelection.attr("fill", f);
+            enterSelection.select("circle").attr("stroke", f);
+          });
+
+          graphModel.putNode({
+            "concept1": "pizza",
+            "concept2": "food",
+            "relation": "IsA",
+            "text": "pizza IsA food",
+            "truth": 0.7132785014872914,
+          });
+
+        })();
+
     },
 
   });
