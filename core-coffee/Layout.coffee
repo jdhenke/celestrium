@@ -14,6 +14,7 @@ define [], () ->
       @render()
     render: ->
       @tl = $("<div id=\"top-left-container\" class=\"container\"/>")
+      @ml = $("<div id=\"middle-left-container\" class=\"container\"/>")
       @bl = $("<div id=\"bottom-left-container\" class=\"container\"/>")
       @br = $("<div id=\"bottom-right-container\" class=\"container\"/>")
       @tr = $("<div id=\"top-right-container\" class=\"container\"/>")
@@ -23,7 +24,7 @@ define [], () ->
           <button id="toggle">Show/Hide</button>
         </div>
       """
-      @$el.append($el) for $el in [@tl, @bl, @br, @tr, @top, @bottom]
+      @$el.append($el) for $el in [@tl, @ml, @bl, @br, @tr, @top, @bottom]
       @addTop($("""<span id="title">#{@options.title}</span>""")) if @options.title?
       @addBottomRight $ """
         <div>
@@ -37,6 +38,8 @@ define [], () ->
       @$el.append el
     addTopLeft: (el) ->
       @tl.append el
+    addMiddleLeft: (el) ->
+      @ml.append el
     addBottomLeft: (el) ->
       @bl.append el
     addTopRight: (el) ->

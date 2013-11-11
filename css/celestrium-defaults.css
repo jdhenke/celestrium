@@ -4,6 +4,7 @@ body, .node-search-container input {font-family: "Trebuchet MS";}
 /* container positioning */
 .container {position: fixed; z-index: 10; background-color: #ccc;  padding: 2px;}
 #top-left-container { top: 5px; left: 5px; }
+#middle-left-container { top: 300px; left: 5px; }
 #top-right-container { top: 5px; right: 5px; }
 #bottom-left-container { bottom: 5px; left: 5px;}
 #bottom-right-container {bottom: 5px; right: 5px; text-align: right; }
