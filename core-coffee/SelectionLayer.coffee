@@ -51,6 +51,7 @@ define [], () ->
 
       @$parent.mousedown (e) =>
         if e.shiftKey
+          @determineSelection()
           @dragging = true;
           _.extend @startPoint, {
             x: e.clientX
