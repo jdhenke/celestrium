@@ -3,45 +3,89 @@
 # automatically puts links to celestrium repo in bottom right
 # and a button to show/hide all other helpers
 define [], () ->
+  class PluginWrapper extends Backbone.View
+    className: 'plugin-wrapper'
+
+    initialize: (args) ->
+      @plugin = args.plugin
+      @pluginName = args.name
+      @collapsed = false
+      @render()
+
+    events:
+      'click .plugin-controls .header': 'close'
+
+    close: (e) ->
+      if @collapsed
+        @collapsed = false
+        # expand
+        @expand @$el.find('.plugin-content')
+      else
+        @collapsed = true
+        # collapse
+        @collapse @$el.find('.plugin-content')
+
+    expand: (el) ->
+      el.slideDown(300)
+      @$el.removeClass('collapsed')
+
+    collapse: (el) ->
+      el.slideUp(300)
+      @$el.addClass('collapsed')
+
+    render: ->
+      @controls = $ """
+        <div class=\"plugin-controls\">
+          <div class=\"header\">
+            <span>#{@pluginName}</span>
+            <div class=\"arrow\"></div>
+          </div>
+        </div>
+      """
+      @content = $("<div class=\"plugin-content\"></div>")
+      @content.append @plugin
+
+
+      @$el.append @controls
+      @$el.append @content
+
 
   class Layout extends Backbone.View
-
-    events: "click #bottom-center-outer-container #toggle": "toggle"
 
     constructor: (@options) ->
       super(@options)
     init: () ->
+      @pluginWrappers = []
+
+      # TODO: find somewhere to put these
+      # @bottom = $("<div class=\"plugin-view\" id=\"bottom-center-outer-container\"><button id=\"toggle\">Show/Hide</button></div>")
+      # @bottomWrapper = new PluginWrapper(
+      #   plugin: @bottom
+      #   )
+      # @bottomRight = $("<div class=\"plugin-view\"><a href=\"https://github.com/jdhenke/celestrium\">celestrium repo</a></div>")
+      # @bottomRightWrapper = new PluginWrapper(
+      #   plugin: @bottomRight
+      #   )
+      # @pluginWrappers.push @bottomWrapper
+      # @pluginWrappers.push @bottomRightWrapper
+
       @render()
     render: ->
-      @tl = $("<div id=\"top-left-container\" class=\"container\"/>")
-      @bl = $("<div id=\"bottom-left-container\" class=\"container\"/>")
-      @br = $("<div id=\"bottom-right-container\" class=\"container\"/>")
-      @tr = $("<div id=\"top-right-container\" class=\"container\"/>")
-      @top = $("""<div id="top-center-outer-container" align="center"/>""")
-      @bottom = $ """
-        <div id="bottom-center-outer-container" align="center">
-          <button id="toggle">Show/Hide</button>
-        </div>
-      """
-      @$el.append($el) for $el in [@tl, @bl, @br, @tr, @top, @bottom]
-      @addTop($("""<span id="title">#{@options.title}</span>""")) if @options.title?
-      @addBottomRight $ """
-        <div>
-          <a href="https://github.com/jdhenke/celestrium">celestrium repo</a>
-        </div>
-      """
+      @pluginContainer = $("<div class=\"plugin-container\"/>")
+      @$el.append @pluginContainer
       return this
-    toggle: () ->
-      $el.toggle() for $el in [@tl, @bl, @br, @tr, @top]
+
+    renderPlugins: ->
+      for pluginWrapper in @pluginWrappers
+        @pluginContainer.append pluginWrapper.el
+
     addCenter: (el) ->
       @$el.append el
-    addTopLeft: (el) ->
-      @tl.append el
-    addBottomLeft: (el) ->
-      @bl.append el
-    addTopRight: (el) ->
-      @tr.append el
-    addBottomRight: (el) ->
-      @br.append el
-    addTop: (el) ->
-      @top.append el
+
+    addPlugin: (plugin, name="Plugin") ->
+      pluginWrapper = new PluginWrapper(
+        plugin: plugin
+        name: name
+        )
+      @pluginWrappers.push pluginWrapper
+      @renderPlugins()

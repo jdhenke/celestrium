@@ -1,5 +1,5 @@
 # renders the graph using d3's force directed layout
-define ["SelectionLayer"], (SelectionLayer) ->
+define [], () ->
 
   class LinkFilter extends Backbone.Model
     initialize: () ->

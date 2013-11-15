@@ -1,21 +1,20 @@
 /* overall font */
 body, .node-search-container input {font-family: "Trebuchet MS";}
 
-/* container positioning */
-.container {position: fixed; z-index: 10; background-color: #ccc;  padding: 2px;}
-#top-left-container { top: 5px; left: 5px; }
-#top-right-container { top: 5px; right: 5px; }
-#bottom-left-container { bottom: 5px; left: 5px;}
-#bottom-right-container {bottom: 5px; right: 5px; text-align: right; }
+/* plugin container */
+.plugin-container {position: fixed; z-index: 10; padding: 2px; box-sizing: border-box; right: 10px; overflow: hidden; min-width: 240px;}
+.plugin-container .plugin-wrapper {width: 100%; padding-top: 2px; padding-bottom: 2px;}
 
-/* title */
-#top-center-outer-container {position: fixed; top: 5px; width: 100%; padding: 2px;}
-#title {background-color: #ccc; padding: 4px; font-size: 18pt;}
+.plugin-container .plugin-wrapper .plugin-controls {background-color: steelblue; padding: 2px;}
 
-/* hide stuff */
-#bottom-center-outer-container {position: fixed; bottom: 5px; width: 100%;}
-#toggle { font-family: "Trebuchet MS"; font-size: 12pt; }
-#toggle:hover {color: white;}
+.plugin-container .plugin-wrapper .plugin-controls .header {color: lightgrey;}
+.plugin-container .plugin-wrapper .plugin-controls .header:hover {cursor: pointer;}
+
+/* down arrow */
+.plugin-container .plugin-wrapper .plugin-controls .arrow{float: right; margin-top: 6px; margin-right: 5px; width: 0; height: 0; border-top: 5px solid lightgrey; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 0px solid lightgrey;}
+/* left arrow */
+.plugin-container .plugin-wrapper.collapsed .plugin-controls .arrow {margin-top: 4px; margin-right: 8px; border-left: 0px solid lightgrey; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-right: 5px solid lightgrey;}
+
 
 /* graph workspace */
 .node circle {}
@@ -32,7 +31,7 @@ body, .node-search-container input {font-family: "Trebuchet MS";}
 .tt-suggestion { margin-left: 2px;}
 
 /* stats */
-.graph-stat {color: white;}
+.graph-stat {color: black;}
 
 /* cdf */
 .link-cdf, .cdf {margin-left: auto; margin-right: auto; width: 200px; }
@@ -42,7 +41,7 @@ body, .node-search-container input {font-family: "Trebuchet MS";}
 .cdf .axis line {fill: none; stroke: #000; shape-rendering: crispEdges; }
 .cdf .axis .label {font-size: 10pt; text-anchor: middle;}
 .cdf-header {text-align: center; }
-.threshold-line {stroke: #EEE; stroke-width: 3px; cursor: ew-resize;}
+.threshold-line {stroke: steelblue; stroke-width: 3px; cursor: ew-resize;}
 .link-cdf.drag {cursor: ew-resize;}
 .link-cdf.drag .threshold-line, .threshold-line:hover {stroke: #FFF;}
 
