@@ -55,3 +55,37 @@ body, .node-search-container input {font-family: "Trebuchet MS";}
 .node-profile {background-color: #ccc; border: 1px solid white; padding: 2px; margin: 2px;}
 .node-profile-title {}
 .node-profile-property {font-size: 12px; }
+
+/* radial context menu */
+
+.radial_container {
+	position:fixed;
+	left:425px;
+	top: 75px;
+	width:100px;
+	height:100px;
+	text-align:center;
+}
+.radial_div_item {
+	background-color:none;
+	height:30px;
+	padding:10px;
+	color:#234;
+
+	cursor:pointer;
+}
+.radial_div_item.active {
+	background-color:#511; color:white;
+	padding: 10px;
+
+	z-index:100;
+}
+.my_class {
+	font-size:1.2em;
+	color:#abc;
+	background-color:#def;
+	padding: 10px;
+	border-radius: 5px;
+
+
+}
