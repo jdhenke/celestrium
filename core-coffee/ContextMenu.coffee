@@ -9,9 +9,15 @@ define [], () ->
     constructor: (@options) ->
       super()
 
+    buttonClick: ->
+        alert "you clicked on .. "
+
     init: (instances) ->
-      @render()
+
       instances["Layout"].addBottomRight @el
+      @functions = []
+      @functions.push @buttonClick
+      @render()
 
 
     render: ->
@@ -20,10 +26,26 @@ define [], () ->
       $li = $("<li />").addClass("item")
       $myclass = $("<div />").addClass("my_class").text("Expand Nodes")
       $li.append $myclass
+
+
+      $li2 = $("<li />").addClass("item")
+      $myclass = $("<div />").addClass("my_class").text("Expand Nodes")
+      $li2.append $myclass
+
+
+
+
+
+
       $ul.append $li
+      $ul.append $li2
       $container.append $ul
 
       @$el.append $container
+
+      functions = @functions
+
+
 
       @$(".radial_container").radmenu
           listClass: "list"
@@ -33,22 +55,28 @@ define [], () ->
           centerX: 30
           centerY: 100
           selectEvent: "click"
-          onSelect: ($selected) ->
-            alert "you clicked on .. " + $selected.index()
+          onSelect: ($selected) -> # show what is returned
 
-          angleOffset: 0
+            console.dir $(".radial_container").radmenu("items")
+            console.dir $selected
+
+
 
       rad_container = @$(".radial_container")
 
+      rad_container.radmenu "show"
+
+
+      """
       document.addEventListener "contextmenu", ((ev) ->
         ev.preventDefault()
         rad_container.radmenu "show"
         false
       ), false
+      """
 
       return this
 
     displayMenu: (ev)->
       ev.preventDefault()
-      console.log "hi"
       return false
