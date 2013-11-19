@@ -20,9 +20,6 @@ define [], () ->
     render: ->
       $container = $("<div />").addClass("node-search-container")
       $input = $("<input type=\"text\" placeholder=\"Node Search...\">").addClass("node-search-input")
-      $input.on "change", () ->
-          val = $(this).val
-          console.log(val)
       $container.append $input
       @$el.append $container
       $input.typeahead
