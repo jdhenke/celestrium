@@ -9,7 +9,8 @@ define [], () ->
       @render()
       @graphModel = instances["GraphModel"]
       @listenTo @graphModel, "change", @update
-      instances["Layout"].addBottomLeft @el
+      instances["Layout"].addPlugin @el, 'Stats'
+
     render: ->
       container = $("<div />").addClass("graph-stats-container").appendTo(@$el)
       @$table = $("<table border=\"0\"/>").appendTo(container)

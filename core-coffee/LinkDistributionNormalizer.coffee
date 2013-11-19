@@ -4,9 +4,8 @@ define [], () ->
 	class LinkDistributionNormalizer extends Backbone.View
 		init: (instances) ->
 			@graphModel = instances["GraphModel"]
-
-			instances["Layout"].addMiddleLeft @el
 			@render()
+			instances["Layout"].addPlugin @el, 'Distribution Normalizer'
 
 
 		@sortNumber: (a,b) ->
@@ -16,9 +15,7 @@ define [], () ->
 			model = @graphModel
 			links = @graphModel.getLinks()
 			$container = $("<div />").addClass("link-normalizer-container")
-			$header = $("<h3 />").text("Normalize Distribution")
 			$input = $("<select id=\"selectId\" name=\"selectName\" />")
-			$container.append $header
 			$container.append $input
 
 
