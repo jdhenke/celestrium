@@ -32,11 +32,6 @@ define [], () ->
       $myclass = $("<div />").addClass("my_class").text("Expand Nodes")
       $li2.append $myclass
 
-
-
-
-
-
       $ul.append $li
       $ul.append $li2
       $container.append $ul
@@ -56,9 +51,7 @@ define [], () ->
           centerY: 100
           selectEvent: "click"
           onSelect: ($selected) -> # show what is returned
-
-            console.dir $(".radial_container").radmenu("items")
-            console.dir $selected
+            functions[$selected.index()]()
 
 
 
