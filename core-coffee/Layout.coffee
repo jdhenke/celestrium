@@ -73,7 +73,6 @@ define [], () ->
     render: ->
       @pluginContainer = $("<div class=\"plugin-container\"/>")
       @$el.append @pluginContainer
-
       return this
 
     renderPlugins: ->
