@@ -73,7 +73,6 @@ define [], () ->
     render: ->
       @pluginContainer = $("<div class=\"plugin-container\"/>")
       @$el.append @pluginContainer
-
       return this
 
     renderPlugins: ->
@@ -87,7 +86,6 @@ define [], () ->
       @contextMenu = $("<div class=\"context-menu\"/>")
       @contextMenu.append el
       @$el.append @contextMenu
-
 
     addPlugin: (plugin, name="Plugin") ->
       pluginWrapper = new PluginWrapper(
