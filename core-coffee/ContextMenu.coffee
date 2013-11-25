@@ -9,40 +9,46 @@ define [], () ->
     constructor: (@options) ->
       super()
 
-    buttonClick: ->
+    DefaultOption: ->
         alert "you clicked on .. "
 
     init: (instances) ->
-
-      instances["Layout"].addBottomRight @el
+      console.log "instances"
       @functions = []
-      @functions.push @buttonClick
-      @render()
 
+      @instances = instances
+      console.log @instances
+      @initializeMenu()
 
-    render: ->
+      instances["Layout"].addContextMenu @el,@radial_container
+
+    initializeMenu: ->
       $container = $("<div />").addClass("radial_container")
-      $ul = $("<ul />").addClass("list")
-      $li = $("<li />").addClass("item")
-      $myclass = $("<div />").addClass("my_class").text("Expand Nodes")
-      $li.append $myclass
-
-
-      $li2 = $("<li />").addClass("item")
-      $myclass = $("<div />").addClass("my_class").text("Expand Nodes")
-      $li2.append $myclass
-
-      $ul.append $li
-      $ul.append $li2
-      $container.append $ul
-
+      @menu = $("<ul />").addClass("list")
+      #add default option TODO: with numbers
+      @addMenuOption "NODES", @DefaultOption
+      $container.append @menu
       @$el.append $container
+
+    addRelatedNodes: ->
+      provider = @instances
+      provider.getLinkedNodes @instances["NodeSelection"].getSelectedNodes(), (nodes) =>
+          _.each nodes, (node) =>
+            provider.graphModel.putNode node if provider.nodeFilter node
+
+    addMenuOption: (menuText, itemFunction)->
+      console.log "menu add "
+      $li = $("<li />").addClass("item")
+      $myclass = $("<div />").addClass("my_class").addClass("").text(menuText)
+      #@functions.push itemFunction
+      console.log itemFunction
+      @addRelatedNodes
+      $li.append $myclass
+      @menu.append $li
 
       functions = @functions
 
-
-
-      @$(".radial_container").radmenu
+      $(".radial_container").radmenu
           listClass: "list"
           itemClass: "item"
           radius: 100
@@ -53,22 +59,8 @@ define [], () ->
           onSelect: ($selected) -> # show what is returned
             functions[$selected.index()]()
 
-
-
-      rad_container = @$(".radial_container")
-
+      rad_container = $(".radial_container")
       rad_container.radmenu "show"
-
-
-      """
-      document.addEventListener "contextmenu", ((ev) ->
-        ev.preventDefault()
-        rad_container.radmenu "show"
-        false
-      ), false
-      """
-
-      return this
 
     displayMenu: (ev)->
       ev.preventDefault()

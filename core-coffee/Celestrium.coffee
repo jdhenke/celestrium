@@ -26,7 +26,7 @@ globalLibs = [
   '../lib/backbone',
   '../lib/d3',
   '../lib/jquery-radmenu',
-
+  '../lib/less'
 ]
 
 define globalLibs, () ->
