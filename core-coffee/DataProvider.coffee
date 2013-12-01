@@ -7,22 +7,12 @@ define [], () ->
         alert "you clicked on .. "
 
     init: (instances) ->
-      @instances = instances
-      @graphModel = @instances["GraphModel"]
-      console.log "DataProvider"
-      console.log @instances["DataProvider"]
-
-
-      ContextMenu = @instances["ContextMenu"]
-      ContextMenu.addMenuOption "Expand Nodes",@addRelatedNodes
-
-      rad_container = $(".radial_container")
-      rad_container.radmenu "show"
+      @NodeSelection = instances["NodeSelection"]
+      @graphModel = instances["GraphModel"]
+      ContextMenu = instances["ContextMenu"]
 
       instances["KeyListener"].on "down:16:187", () =>
-        @getLinkedNodes @instances["NodeSelection"].getSelectedNodes(), (nodes) =>
-          _.each nodes, (node) =>
-            @graphModel.putNode node if @nodeFilter node
+        @addRelatedNodes()
       @graphModel.on "add:node", (node) =>
         nodes = @graphModel.getNodes()
         @getLinks node, nodes, (links) =>
@@ -34,7 +24,7 @@ define [], () ->
     # should call callback with a respective array of links from node to nodes
     # source and target will automatically be assigned
     addRelatedNodes: ->
-      @getLinkedNodes @instances["NodeSelection"].getSelectedNodes(), (nodes) =>
+      @getLinkedNodes @NodeSelection.getSelectedNodes(), (nodes) =>
           _.each nodes, (node) =>
             @graphModel.putNode node if @nodeFilter node
 
