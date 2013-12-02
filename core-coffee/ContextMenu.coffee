@@ -3,24 +3,25 @@ define [], () ->
 
   class ContextMenu extends Backbone.View
 
-    events:
-      "contextmenu": "displayMenu"
-
     constructor: (@options) ->
       super()
 
-    DefaultOption: ->
-        alert "you clicked on .. "
-
     init: (instances) ->
       @functions = []
-
-      @instances = instances
       @initializeMenu()
+
+      # get mouse coordinates to center context menu
+      that = @
+      d3.select("html").on "mousemove", ->
+        coordinates = d3.mouse(this)
+        that.x = coordinates[0]
+        that.y = coordinates[1]
 
       instances["Layout"].addContextMenu @el,@radial_container
       display = false
-      @listenTo instances["KeyListener"], "down:80", () =>
+      @listenTo instances["KeyListener"], "down:77", (e) =>
+        $(".radial_container").css "top", @y - 120
+        $(".radial_container").css "left", @x - 70
         display = !display
         if display
           $(".radial_container").radmenu "show"
@@ -31,18 +32,19 @@ define [], () ->
       $container = $("<div />").addClass("radial_container")
       @menu = $("<ul />").addClass("list")
       #add default option TODO: with numbers
-      @addMenuOption "Nodes Selected", @DefaultOption
 
       $container.append @menu
       @$el.append $container
 
+      @addMenuOption "Nodes Selected"
+
     addMenuOption: (menuText, itemFunction, that)->
       $li = $("<li />").addClass("item")
-      menuLabel = menuText.replace " ","_"
-      $myclass = $("<div />").addClass("my_class").addClass(menuLabel).text(menuText)
-      @functions.push itemFunction
+      $myclass = $("<div />").addClass("my_class").text(menuText)
       $li.append $myclass
       @menu.append $li
+
+      @functions.push itemFunction
 
       functions = @functions
 
@@ -56,9 +58,3 @@ define [], () ->
           selectEvent: "click"
           onSelect: ($selected) -> # show what is returned
             functions[$selected.index()].apply(that)
-
-
-
-    displayMenu: (ev)->
-      ev.preventDefault()
-      return false
