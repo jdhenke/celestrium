@@ -82,6 +82,11 @@ define [], () ->
     addCenter: (el) ->
       @$el.append el
 
+    addContextMenu: (el, menu)->
+      @contextMenu = $("<div class=\"context-menu\"/>")
+      @contextMenu.append el
+      @$el.append @contextMenu
+
     addPlugin: (plugin, name="Plugin") ->
       pluginWrapper = new PluginWrapper(
         plugin: plugin

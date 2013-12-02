@@ -17,6 +17,7 @@ requirejs.config
   shim:
     "../lib/jquery.typeahead": ["../lib/jquery"]
     "../lib/backbone": ["../lib/underscore"]
+    "../lib/jquery-radmenu": ["../lib/jquery"]
 
 globalLibs = [
   '../lib/jquery',
@@ -24,6 +25,7 @@ globalLibs = [
   '../lib/underscore',
   '../lib/backbone',
   '../lib/d3',
+  '../lib/jquery-radmenu',
   '../lib/less'
 ]
 
