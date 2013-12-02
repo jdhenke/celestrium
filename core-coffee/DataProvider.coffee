@@ -3,9 +3,6 @@ define [], () ->
 
   class DataProvider
 
-    DefaultOption: ->
-        alert "you clicked on .. "
-
     init: (instances) ->
       @NodeSelection = instances["NodeSelection"]
       @graphModel = instances["GraphModel"]
@@ -13,6 +10,7 @@ define [], () ->
 
       instances["KeyListener"].on "down:16:187", () =>
         @addRelatedNodes()
+
       @graphModel.on "add:node", (node) =>
         nodes = @graphModel.getNodes()
         @getLinks node, nodes, (links) =>

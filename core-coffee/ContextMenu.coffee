@@ -45,9 +45,7 @@ define [], () ->
       @menu.append $li
 
       @functions.push itemFunction
-
       functions = @functions
-
       $(".radial_container").radmenu
           listClass: "list"
           itemClass: "item"
