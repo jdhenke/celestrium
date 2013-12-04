@@ -6,7 +6,6 @@ define [], () ->
     init: (instances) ->
       @NodeSelection = instances["NodeSelection"]
       @graphModel = instances["GraphModel"]
-      ContextMenu = instances["ContextMenu"]
 
       instances["KeyListener"].on "down:16:187", () =>
         @addRelatedNodes()

@@ -3,6 +3,9 @@ define [], () ->
 
   class ContextMenu extends Backbone.View
 
+    TestOption: ->
+      console.log "test"
+
     constructor: (@options) ->
       super()
 
@@ -11,7 +14,7 @@ define [], () ->
       that = @
 
       @menuFunctions = []
-      @initializeMenu()
+      @menuThat = []
 
       @selectionCount = 0
       instances["NodeSelection"].on "change", ->
@@ -37,6 +40,11 @@ define [], () ->
           $(".radial_container").radmenu "hide"
 
       instances["Layout"].addContextMenu @el,@radial_container
+      @initializeMenu()
+      @addMenuOption "Nodes Selected", @TestOption, @
+
+
+
 
     initializeMenu: ->
       $container = $("<div />").addClass("radial_container")
@@ -46,7 +54,7 @@ define [], () ->
       $container.append @menu
       @$el.append $container
 
-      @addMenuOption "Nodes Selected"
+
 
     addMenuOption: (menuText, itemFunction, that)->
       $li = $("<li />").addClass("item")
@@ -56,7 +64,12 @@ define [], () ->
       @menu.append $li
 
       @menuFunctions.push itemFunction
+      @menuThat.push that
+
+    renderMenu: ->
       menuFunctions = @menuFunctions
+      menuThat = @menuThat
+      console.log menuThat
       $(".radial_container").radmenu
           listClass: "list"
           itemClass: "item"
@@ -66,4 +79,4 @@ define [], () ->
           centerY: 100
           selectEvent: "click"
           onSelect: ($selected) -> # show what is returned
-            menuFunctions[$selected.index()].apply(that)
+            menuFunctions[$selected.index()].apply(menuThat[$selected.index()])
