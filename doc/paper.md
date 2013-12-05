@@ -1,11 +1,11 @@
 Celestrium
 ==========
 
-Sharon Hao
+Sharon Hao, Justin Helbert, Joe Henke
 
-Justin Helbert
+MIT 6.885
 
-Joe Henke
+Professor Madden
 
 ## Abstract
 
@@ -243,6 +243,22 @@ And that's it! The resulting interface looks like this:
 > * compare the each implementation's main and data provider wrt. lines of code
 > * graphs would be good
 
+## Future Work
+
+Now that we've seen what Celestrium can do, it is worth detailing it's limitations and ideas for new functionality, the subjects of the next two sections.
+
+### Celestrium's Current Limitations
+
+> These are limitations of the current implementations.
+> Reducing these limitationss is an easy way to get at future work.
+> I leave **new** features to @haosharon in the next section.
+
+### General Future Work
+
+> See all the issues we've discussed
+
 ## Conclusion
+
+
 
 > TODO
