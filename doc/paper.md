@@ -245,20 +245,49 @@ And that's it! The resulting interface looks like this:
 
 ## Future Work
 
-Now that we've seen what Celestrium can do, it is worth detailing it's limitations and ideas for new functionality, the subjects of the next two sections.
+Now that we've seen what Celestrium can do, it is worth detailing it's limitations and ideas for new functionality, the subjects of the following sections.
+Future contributors to Celestrium are encouraged to address these topics.
 
-### Celestrium's Current Limitations
+###  Current Limitations
 
 > These are limitations of the current implementations.
-> Reducing these limitationss is an easy way to get at future work.
-> I leave **new** features to @haosharon in the next section.
+> Reducing these limitations is an easy way to get at future work.
+> I leave *new* features to @haosharon in the next section.
+
+Celestrium's design and implementation is certainly not without fault.
+Because Celestrium's efficacy is based on how easy it is for developers to use, issues of various scopes come into play.
+In an effort to explain the full spectrum, we now detail these issues progressing from the purely logistical to the more theoretical.
+
+#### Infrastructure
+
+* git submodule
+* build process
+* less compilation process/required inclusion in main file
+* reducing requirements for directory organization
+
+#### Code Organization
+
+* reiterate mention no circular dependencies
+* reiterate order of specific plugins matters
+* mention poor extensibility/flexibility of Layout
+
+#### Scalability
+
+* not backend
+* speed - barnes hut > show quantitative results
+* memory usage - > show quantitative results
 
 ### General Future Work
 
-> See all the issues we've discussed
+> @haosharon, see all the issues we've discussed
+>
+> Additionally, making Celestrium able to read **and write** to the DB would be a whole other ball game.
+>
+> related to infrastructure, declare v1.0.0 pursuant to [semantic versioning](http://semver.org/). 
+> this is incredibly practical for developers depending on this.
+>
+> not interesting but worth mentioning unit testing and continuous integration
 
 ## Conclusion
-
-
 
 > TODO
