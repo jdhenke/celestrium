@@ -235,7 +235,114 @@ And that's it! The resulting interface looks like this:
 
 #### Semantic Networks
 
-> TODO: @jdhenke
+The third data set that we built an interface for using Celestrium was a semantic network.
+More specifically, it was showing the results of performing **inference** over a semantic network.
+More on this later.
+Nodes represented every day concepts and the links showed closely they were related.
+
+##### Example of Semantic Network Interface
+
+![image](https://f.cloud.github.com/assets/1418690/1689464/df3411e8-5e22-11e3-8477-683173eb9d24.png)
+
+##### Main Script
+```coffeescript
+localStorage.clear()
+requirejs.config
+
+  # must point to the URL corresponding to the celestrium repo
+  baseUrl: "/scripts/celestrium/core"
+  # specifies namespace and URL path to my custom plugins
+  paths: "uap": "../../uap/"
+
+# main entry point
+require ["Celestrium"], (Celestrium) ->
+
+  # call with server's response to ping about dimensionality
+  main = (response) ->
+
+    # initialize the workspace with all the below plugins
+    Celestrium.init
+      # these come with celestrium
+      # their arguments should be specific to this data set
+      "Layout":
+        "el": document.querySelector "#workspace"
+        "title": "UAP"
+      "KeyListener":
+        document.querySelector "body"
+      "GraphModel":
+        "nodeHash": (node) -> node.text
+        "linkHash": (link) -> link.source.text + link.target.text
+      "GraphView": {}
+      "Sliders": {}
+      "ForceSliders": {}
+      "NodeSearch":
+        prefetch: "get_nodes"
+      "Stats": {}
+      "NodeSelection": {}
+      "SelectionLayer": {}
+      "NodeDetails": {}
+      "LinkDistribution": {}
+      # these are plugins i defined specific to this data set
+      "uap/DimSlider":
+        [response.min, response.max]
+      "uap/ConceptProvider": {}
+      "uap/CodeLinks": {}
+
+  # ask server for range of dimensionalities
+  $.ajax
+    url: "get_dimensionality_bounds"
+    success: main
+```
+
+##### `DataProvider` Implementation
+
+```coffeescript
+# interface to uap's semantic network
+# nodes are concepts from a semantic network
+# links are the relatedness of two concepts
+define ["DataProvider"], (DataProvider) ->
+
+  # minStrength is the minimum similarity
+  # two nodes must have to be considered linked.
+  # this is evaluated at the minimum dimensionality
+  numNodes = 25
+
+  class ConceptProvider extends DataProvider
+
+    init: (instances) ->
+      @dimSlider = instances["uap/DimSlider"]
+      super(instances)
+
+    getLinks: (node, nodes, callback) ->
+      data =
+        node: JSON.stringify(node)
+        otherNodes: JSON.stringify(nodes)
+      @ajax "get_edges", data, (arrayOfCoeffs) ->
+        callback _.map arrayOfCoeffs, (coeffs, i) ->
+          coeffs: coeffs
+
+    getLinkedNodes: (nodes, callback) ->
+      data =
+        nodes: JSON.stringify(nodes)
+        numNodes: numNodes
+      @ajax "get_related_nodes", data, callback
+
+    # initialize each link's strength before being added to the graph model
+    linkFilter: (link) ->
+      @dimSlider.setLinkStrength(link)
+      return true
+```
+
+The most interesting part of this implementation is that `ConceptProvider` doesn't define a link's strength, only a `coeffs` parameter, then it uses `DimSlider`'s `setLinkString` function as a filter on the link.
+This because the link strength's are actually a function of a polynomial in value of the **dimensionality** of the inference process, whose value is maintained in `DimSlider`.
+So on the server, each link's polynomial is constructed rather than a single value, the coefficients sent to `DataProvider`, then `DimSlider` uses the current value of the "Dimensionality Slider" in the interface (see the example picture) to actually define the link's strength numerically.
+
+Firstly, Celestrium's flexibility in defining the strength of a link was critical in creating this interface.
+Additionally, this extra slider inspired the creation of the `Sliders` plugin, and allows this "Dimensionality Slider" to integrate seemlessly into the UI next to the other sliders.
+
+Future work in this interface is to include different types of nodes, which is something that Celestrium currently doesn't prohibit, but doesn't provide express functionality for, and so perhaps a next step is to provide functionality that supports have distinct types of nodes.
+More details of the specific needs of this dataset should be investigated before deciding on the specific features this would entail.
+
 
 ### Implementation Cost Comparisons
 
