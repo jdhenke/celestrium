@@ -66,6 +66,8 @@ define [], () ->
       @menuFunctions.push itemFunction
       @menuThat.push that
 
+
+
     renderMenu: ->
       menuFunctions = @menuFunctions
       menuThat = @menuThat

@@ -18,6 +18,9 @@ define [], () ->
             link.target = nodes[i]
             @graphModel.putLink link if @linkFilter link
 
+      ContextMenu = instances["ContextMenu"]
+      ContextMenu.addMenuOption "Expand Nodes", @addRelatedNodes, @
+
     # should call callback with a respective array of links from node to nodes
     # source and target will automatically be assigned
     addRelatedNodes: ->
