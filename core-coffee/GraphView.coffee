@@ -143,7 +143,8 @@ define [], () ->
       @trigger "enter:node", nodeEnter
       @trigger "enter:link", linkEnter
       node.exit().remove()
-      @force.on "tick", ->
+      @force.on "tick", =>
+        @trigger "tick"
         link.attr("x1", (d) ->
           d.source.x
         ).attr("y1", (d) ->
