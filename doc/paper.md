@@ -254,33 +254,33 @@ Future contributors to Celestrium are encouraged to address these topics.
 > Reducing these limitations is an easy way to get at future work.
 > I leave *new* features to @haosharon in the next section.
 
-Celestrium's design and implementation is certainly not without fault.
+Celestrium's design and implementation are certainly not without fault.
 Because Celestrium's efficacy is based on how easy it is for developers to use, issues of various scopes come into play.
-In an effort to explain the full spectrum, we now detail these issues progressing from the purely logistical to the more theoretical.
+In an effort to explain the full spectrum, we now detail these issues progressing from the purely logistical to the more technical.
 
 #### Infrastructure
 
-While not as intellectually stimulating as some other problems, the Celestrium's infrastructure could perhaps be improved in the following respects.
+While not as intellectually stimulating as other problems, Celestrium's infrastructure could perhaps be improved in the following ways.
 
 Firstly, Celestrium is written primarily in Coffeescript, which compiles to Javascript.
-Because of this, any developer using celestrium must bring the tools to do this compilation into their project when they might not necessarily want or be able to.
-Looking into using requirejs's optimization tool on the compiled out, Celestrium could potentially release a minified, single javascript file.
+Because of this, any developer using Celestrium must bring the tools to do this compilation into their project when they might not necessarily want or be able to.
+Looking into using requirejs's optimization tool on the compiled output, Celestrium could potentially release a minified, single javascript file, making it much easier to simply put in a project.
 
-Additionally, Celestrium uses less, which compiles to css. Currently, Celestrium avoids the need to compile its less files but at the cost of users of celestrium needing to load the less compiler onto any webpage using Celestrium.
-A similar, compiled version of the css should be made available by Celestrium as well.
+Additionally, Celestrium uses Less, which compiles to CSS. Currently, Celestrium avoids the need to compile its less files but at the cost of users of celestrium needing to load the Less compiler onto any webpage using Celestrium.
+A similar, compiled version of the CSS should be made available for Celestrium as well.
 
 #### Code Organization
 
-Moving into how Celestrium organized its modules, several things could be improved.
+Moving into how Celestrium organizes its modules, several things could be improved.
 
-As mentinoed previously, circular dependencies are not allowed.
+As mentinoed previously, circular dependencies amongst plugins are not allowed.
 The only drawback as it stands is that plugins must be specified according the their partial ordering of depedencies in calling `Celestrium.init`.
 It remains to be seen if there is a good use case which would merit this or if there is a complete argument against circular dependencies.
-Either allowing circular dependencies or providing a more thorough argument against them would at least clarify the appropriateness of the decision.
+Either allowing circular dependencies or providing a more thorough argument against them would at least clarify the appropriateness of this decision.
 
 Additionally, the Layout plugin, while convenenient, is not as configurable as it could perhaps be.
-While this isn't horrible in and of itself, it is problematic that many of the other plugins rely on using Layout, because not wanting to use Layout then implies one cannot use all other plugins which depend on it.
-Making Layout more configurable and/or reducing other plugins' dependence on it would certainly make Celestrium more modular.
+While this isn't problematic in isolation, it is problematic that many of the other plugins rely on using Layout, because not wanting to use Layout then implies one cannot use any plugins which depends on it.
+Making Layout more configurable and/or removing other plugins' dependence on it would certainly make Celestrium more modular.
 
 #### Scalability
 
@@ -288,26 +288,28 @@ How large of a graph can interfaces created by Celestrium handle?
 This question is open to interpretation, so first some framing is in order.
 
 Firstly, we consider the scalability of the backend database a separate issue.
-Celestrium is an entirely frontend library, so the specifics of the database performance certainly affect its use, but it is not fundamentally part of Celestrium and so is not a good metric by which to judge Celestrium's performance.
+Celestrium is an entirely frontend library, so the specifics of the database performance certainly affect its use in practice, but it is not fundamentally part of Celestrium and so is not a good metric by which to judge Celestrium's performance.
 
 Therefore, we will focus on the performance of the frontend.
-This was done by measuring certain metrics for different numbers of nodes and links.
+This was done by measuring certain metrics for rendering different numbers of nodes and links, all populated entirely within the frontend.
 Tests were performed on a 15" MacBook Pro with Retina Display, 2.6 GHz Intel Core i7 with 8 GB 1600 MHz DDR3 RAM using Goolge Chrome 31.0.1650.57.
-Specifically, nine different tests were conducted where the number of nodes and links were from {1000, 2500 and 5000}.
+Specifically, nine different tests were conducted where the number of nodes and links were from {1000, 2500, 5000}.
 Then the following metrics were evaluated and tabulated.
 
-* Memory Usage - The amount of memory used by the tab in Chrome
-* Time to Populate the Graph - The amount of time it took to add the specified number of nodes and links to the graph.
-* Responsiveness of the Visualization - Once the graph was completely populated, the d3's force directed layouts iterates and on each **tick**, the graph updates the location of the nodes and links. To measure the responsiveness, the 
+* **Memory Usage** - The amount of memory used by the tab in Chrome
+* **Time to Populate the Graph** - The amount of time it took to add the specified number of nodes and links to the graph.
+* **Responsiveness of the Visualization** - Once the graph was completely populated, d3's force directed layouts iterates and on each **tick**, the graph updates the location of the nodes and links. To measure the responsiveness, the amount of time between ticks for the first ten seconds of the rendering was averaged.
 
 Before going into the details of the results, it is worth noting that while the interface can handle these sizes of graphs, it is not a typical use case.
-The purpose of these interfaces is for a human to explore these graphs and a human would have a hard time understanding thea graph of even 1000 nodes and links.
+The purpose of these interfaces is for a human to explore these graphs and a human would have a hard time understanding a graph of even 1000 nodes and links.
 Testing on a more reasonable scale i.e. 100 nodes and 1000 links yielded very good performance.
-We ~24 ms/tick which equates to ~40 updates per second, which is high enough to produce fluid movement of the graph to the user.
+We found ~24 ms/tick which equates to ~40 updates per second, which is high enough to produce very fluid rendering of the graph to the user.
 The memory usage was negligble and it took less than one second to populate the graph.
 In summary, at scales a human could understand, Celestrium has been found to perform very well.
 
 The purpose of explaining the following metrics, then, is to understand the limits of Celestrium's interface, human capabilities aside.
+These limitations are worth nothing and improving because they could help improve performance on slower machines which may have trouble even on more reasonably sized graphs.
+Additionally, it is impossible to rule out a use case where these sized graphs are actually necessary to render.
 With that in mind, let's start with the memory used in each test case.
 
 ##### Memory Usage
@@ -318,7 +320,7 @@ The amount of memory used by the tab in chrome according to Chrome's Task Manage
 
 To summarize, the amount of memory certainly scales with both links and nodes, but it seems to grow much more with the number of nodes.
 The absolute scale of these numbers is well within the acceptable range of memory usage.
-For reference, the tab with Gmail open was using 170, putting the highest memory used by Celestrium at less than 65% of Gmail.
+For reference, a tab with Gmail open was using 170 MB, putting the highest memory used by Celestrium at less than 65% of Gmail.
 
 ##### Time to Populate the Graph
 
@@ -336,7 +338,7 @@ The first is the general range of the results. The fastest test took approximate
 
 The second is that the time to add a certain number of nodes was irrespective of the number of links, while the opposite is not true and the reason for this is perhaps somewhat subtle - the nodes were always added first.
 Link objects must reference the actual node objects they are linking, so the nodes must be created first.
-So the number of links added will never affect the time to load the nodes because it occurs after the noads are loaded.
+The number of links added will never affect the time to load the nodes because it occurs after the noads are loaded.
 However, it is somewhat unclear why the number of nodes affects the time to add a link.
 We hypothesize that this is due to the overlap in the process of adding the links and the events still being fired from adding the nodes.
 
@@ -345,18 +347,18 @@ And lastly, the performance in loading the graph seems to follow the results of 
 How could this be improved?
 Perhaps the fundamental issue is that nodes and links must be added individually rather than all at once.
 This design choice was made to more easily communicate with the backend about updating the state of the graph.
-In particular, when adding a node to the graph, the only links that must be considered are between that node and all the nodes currently present.
-If more than one node is added a time, the links between each pair of nodes within that group must now also be considered, greatly increasing the complexity the developer must deal with.
+In particular, when adding a node to the graph, the only links that must be fetched to keep the grpah current are between that node and all the nodes currently present.
+If more than one node is added a time, the links between each pair of nodes within that new group must now also be considered, greatly increasing the complexity the developer must deal with.
 However, if high performance for larger graphs and/or slower machines is required, we feel this is the largest bottleneck.
 
 ##### Visualization Responsiveness
 
 The last metric to consider is how quickly the force directed layout updates itself.
 
-It is worth mentioning the algorithm d3 implements is the [Barnes-Hut approximation](http://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation) which provides an asymptotic runtime of `O(n*log(n))` for `n` nodes, as opposed to a naive implementation's `O(n^2))`.
+It is worth mentioning the algorithm that d3 implements is the [Barnes-Hut approximation](http://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation) which provides an asymptotic runtime of `O(n*log(n))` for `n` nodes, as opposed to a naive implementation's `O(n^2))`.
 
 Additionally, the rendering speed is improved if the visualization is zoomed out and worsened when zoomed in.
-For these tests, the default zoom level was used.
+For these tests, the default zoom level was used for uniformity.
 
 The following metrics were found by, once the graph was completely loaded, averaging the time between updates of the layout for the first ten seconds of the simulation.
 Here is what was found:
@@ -365,14 +367,15 @@ Here is what was found:
 
 First, it seems there is a fair amount of variability, as the results go from 1785 ms for 2500 nodes and links to 841 ms when the number of links *increases* to 5000.
 A possible reason for this is that, due to the large number of nodes, some nodes were not always visible on the screen, perhaps reducing the browser's rendering computation.
-Perhaps in the run with 2500 nodes and 5000 links, more nodes than usual were not visible, speeding up the runtimes.
+Perhaps in the case with 2500 nodes and 5000 links, more nodes than usual were not visible, speeding up the runtime of those iterations.
 
 To explain the >10000 entry, using 5000 nodes and links resulted in the layout never completing it's second iteration in the first ten seconds.
 
 In summary, it seems Celestrium's interface can definitely become unusable when scaled up these sized graphs.
-To overcome this, one could leverage the effects of zoom and when slow layout iterations are detected, zoom out.
+To overcome this, one could leverage the effects of zooming and when slow layout iterations are detected, zoom out.
 Additionally, a force directed layout aproach may fundamentally not be feasable at this scale, so a one time static layout algorithm may be necessary at this scale.
-Again, because humans most likely would not be able to make sense of so much data, making this interface usable at this scale may not be a priority, but we suggest that at least detecting when the layout iterations become slow and handling it accordingly so the user is not left simply staring at a faltering visualization.
+Or, one could run the layout internally without updating the UI, then simply render the final result of the layout process at the end.
+Again, because humans most likely would not be able to make sense of so much data, making this interface usable at this scale may not be a priority, but we suggest at least detecting when the layout iterations become slow and handling it accordingly so the user is not left simply staring at a faltering visualization.
 
 
 ### General Future Work
