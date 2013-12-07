@@ -355,6 +355,9 @@ First a python script was written to scrape the Github API and collect data into
 I found it pretty straightforward to implement the GithubProvider class (code below) to connect this data to Celestrium, especially with the example implementations serving as guidance.
 
 
+![image](https://f.cloud.github.com/assets/774269/1699263/f6d3cd38-5f8b-11e3-990c-15a56594ea29.png)
+
+
 
 Looking at the distribution of collaborations, there were many relationships with few repos collaborated on), with some outliers of a very high number of repos collaborated on.
 This distribution inspired a LinkDistributionNormalizer plugin, where link strengths could be transformed linearly, logarithmically, or into percentiles to best fit the distribution of the data.
