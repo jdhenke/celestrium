@@ -20,12 +20,12 @@ Celestrium is a frontend architecture for the web to visualize graphs.
 Prior to Celestrium, several javascript graph visualization frameworks existed.
 They and their differences with Celestrium are listed here.
 
-[**Canviz**](http://stackoverflow.com/a/5715325) can render standard `.dot` files as a graph, which Celestrium cannot do. 
-However, the resulting visualization is static - the nodes cannot be moved. 
+[**Canviz**](http://stackoverflow.com/a/5715325) can render standard `.dot` files as a graph, which Celestrium cannot do.
+However, the resulting visualization is static - the nodes cannot be moved.
 In Celestrium, nodes can be clicked, selected and dragged, continuously altering the layout of the graph.
 
 [**Javascript InfoVis Toolkit**](http://philogb.github.io/jit/index.html) and [**VivaGraphJS**](https://github.com/anvaka/VivaGraphJS) are more dynamic and can detect user interaction with nodes, for example.
-However, they are only responsible for rendering the graph's layout. 
+However, they are only responsible for rendering the graph's layout.
 Ultimately, what separates Celestrium from VivaGraphJS and all other libraries is it has extra plug-and-play features builtin such as:
 
 * Being able to manipulate and view distributions of link strengths
@@ -44,20 +44,20 @@ Celestrium is intended for the case where a user wants to visually analyze a gra
 
 ### Plugin Architecture
 
-Celestrium is implemented as a collection of requirejs plugins, so the design pattern which dictates the interaction between these plugins is critical. 
-Celestrium leverages `requirejs` to provide access to plugin *definitions*. 
-Then, building on top of that, Celestrium uses a custom infrastructure to provide access to the *instance* of each plugin. 
+Celestrium is implemented as a collection of requirejs plugins, so the design pattern which dictates the interaction between these plugins is critical.
+Celestrium leverages `requirejs` to provide access to plugin *definitions*.
+Then, building on top of that, Celestrium uses a custom infrastructure to provide access to the *instance* of each plugin.
 The difference may or may not be obvious, but it is important in understanding Celestrium's design.
 
 - **Definitions**, conceptually, provide the *ability* to create a certain type of object.
 - **Instances** - are the *instantiated objects* themselves.
 
-To make this concrete, consider the GraphModel plugin. 
+To make this concrete, consider the GraphModel plugin.
 The *definition* is the class definition in Coffeescript, but an *instance* is a GraphModel object.
-This may seem trivial, but requirejs only provides the definitions, not the instances, which is an issue because plugins almost always need access to the *instance* of another plugin and more specifically, they need access to the *same* instance. 
+This may seem trivial, but requirejs only provides the definitions, not the instances, which is an issue because plugins almost always need access to the *instance* of another plugin and more specifically, they need access to the *same* instance.
 
-For example, if the GraphView instance was listening to a different GraphModel instance than the DataProvider instance, (which adds nodes and links to it,) the GraphView would never receive that information because it's listening to a completely different object. 
-This seems to suggest a singleton pattern, where each class automatically creates an instance of itself and attaches it to the class definition. 
+For example, if the GraphView instance was listening to a different GraphModel instance than the DataProvider instance, (which adds nodes and links to it,) the GraphView would never receive that information because it's listening to a completely different object.
+This seems to suggest a singleton pattern, where each class automatically creates an instance of itself and attaches it to the class definition.
 However, plugins often need parameters in their constructor that must be specified by the developer somehow i.e. the DOM element in which to house the workspace.
 Thus plugin definitions can't automatically instantiate themselves without providing an entry for custom parameters.
 
@@ -106,7 +106,7 @@ In fact, we feel this is a good design approach for *any* interface which has di
 Moving from the plugin architecture to a single plugin, the GraphModel plugin, this section discusses how Celestrium models a graph.
 
 d3's force directed layout is the what currently renders the actual graph onscreen, so any deviation from d3's graph representation would require the data to be put into that format anyway.
-So, it seemed optimal, practically speaking, to use d3's representation, but it was not attempted to optimize for other uses cases. 
+So, it seemed optimal, practically speaking, to use d3's representation, but it was not attempted to optimize for other uses cases.
 This may be worth investigating if alternative layout methods are used.
 
 d3 uses an array of javascript objects to represent the nodes.
@@ -141,7 +141,7 @@ For data sets that cannot accomplish this, it is left to the developer to provid
 
 *It's hard to think about thinking without thinking about thinking about something.*
 
-In this spirit, this section provides concrete examples of using Celestrium. 
+In this spirit, this section provides concrete examples of using Celestrium.
 The first is an interface which has no backend - it simply produces random links between nodes named after the Phonetic Alphabet.
 This random interface is then used as a baseline in comparison to implementations of real data sets.
 Because some data sets generate their graphs differently i.e. sparse matrices vs. redirecting to a REST API vs. static data, only the main script and data provider scripts are compared, however other scripts which were necessary for each interface to function are described in each section for reference.
@@ -150,7 +150,7 @@ Because some data sets generate their graphs differently i.e. sparse matrices vs
 
 #### Random
 
-This example shows the necessary code to create the functionality for a random graph generator. 
+This example shows the necessary code to create the functionality for a random graph generator.
 This implementation is also more thoroughly explained to illustrate the general structure of an implementation.
 
 > NOTE: `PhoneticAlphabet` is just an array of strings which is the phonetic alphabet.
@@ -191,7 +191,7 @@ This is the entry point for code execution.
 The first lines configure different requirejs paths.
 
 * `baseUrl` should be the path to the compiled output of Celestrium's `core-coffee` directory relative to the page it is included on.
-* `local` specifies the path to the compiled output of plugins that were created specifically for this example and are not part of Celestrium. 
+* `local` specifies the path to the compiled output of plugins that were created specifically for this example and are not part of Celestrium.
 This path is relative to `baseUrl`.
 
 Then `require` is used to load the `Celestrium` module definition and initiate the desired plugins for this interface.
@@ -215,7 +215,7 @@ define ["DataProvider", "local/PhoneticAlphabet"],
         .value()
 ```
 
-As described in the implementation section, `getLinks` returns an array of links between `node` and `nodes`. 
+As described in the implementation section, `getLinks` returns an array of links between `node` and `nodes`.
 In this case, it's 0 half the time and randomly between [0,1] the other half.
 It's directionality is also random.
 
@@ -229,6 +229,47 @@ And that's it! The resulting interface looks like this:
 
 > TODO: @haosharon
 
+##### main.coffee
+```coffeescript
+requirejs.config
+  baseUrl: "/scripts/celestrium/core/"
+
+  paths:
+    local: "../../"
+
+require ["Celestrium"], (Celestrium) ->
+
+  plugins =
+
+    Layout:
+      el: document.querySelector("body")
+
+    KeyListener:
+      document.querySelector("body")
+
+    GraphModel:
+      nodeHash: (node) -> node.text
+      linkHash: (link) -> link.source.text + link.target.text
+
+    GraphView: {}
+    Sliders: {}
+    ForceSliders:
+      pluginOrder: 1
+    NodeSearch:
+      pluginOrder: 0
+      prefetch: "get_nodes"
+
+    Stats:
+      pluginOrder: 2
+    NodeSelection: {}
+    LinkDistribution:
+      pluginOrder: 3
+    SelectionLayer: {}
+    "local/ExampleDataProvider": {}
+
+  Celestrium.init plugins, (instances) ->
+    instances["GraphView"].getLinkFilter().set("threshold", 0)
+```
 #### Github Collaboration
 
 > TODO: @jhelbert
@@ -346,7 +387,7 @@ More details of the specific needs of this dataset should be investigated before
 
 ### Implementation Cost Comparisons
 
-> TODO: 
+> TODO:
 > * compare the each implementation's main and data provider wrt. lines of code
 > * graphs would be good
 
@@ -491,7 +532,7 @@ Again, because humans most likely would not be able to make sense of so much dat
 >
 > Additionally, making Celestrium able to read **and write** to the DB would be a whole other ball game.
 >
-> related to infrastructure, declare v1.0.0 pursuant to [semantic versioning](http://semver.org/). 
+> related to infrastructure, declare v1.0.0 pursuant to [semantic versioning](http://semver.org/).
 > this is incredibly practical for developers depending on this.
 >
 > not interesting but worth mentioning unit testing and continuous integration
