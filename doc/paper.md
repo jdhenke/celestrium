@@ -563,15 +563,6 @@ Again, because humans most likely would not be able to make sense of so much dat
 
 ### General Future Work
 
-> @haosharon, see all the issues we've discussed
->
-> Additionally, making Celestrium able to read **and write** to the DB would be a whole other ball game.
->
-> related to infrastructure, declare v1.0.0 pursuant to [semantic versioning](http://semver.org/).
-> this is incredibly practical for developers depending on this.
->
-> not interesting but worth mentioning unit testing and continuous integration
-
 Celestrium is currently in a v1.0 state. For the future, there are many features we'd like to add.
 
 * **Minimap** when a user explores a very large dataset, it is sometimes easy to get lost in the low-level details. We'd like to provide a minimap so users can always have a sense of the entire graph.
@@ -586,14 +577,15 @@ Celestrium is currently in a v1.0 state. For the future, there are many features
 
 * **Serialization and caching** On every addition to the graph, we make a request to the server. In efforts to optimize performance, we could use Javascript's `localStorage` or `sessionStorage` to make this happen.
 
-* **Custom mapping to visual dimensions** When nodes or edges have continuous values, we want to allow the user to specify how that should be represented. Currently, we use histograms to bin values. However, it could be possible that the developer can define their own views to display values.
+* **Custom mapping to visual dimensions** When nodes or edges have continuous values, we want to allow the user to specify how that should be represented. Currently, we use histograms to bin link strengths. However, it could be possible that the developer can define their own views to display values and attributes of the nodes and links.
 
 * **Graph analysis** Since we have such a well formed graph, it seems natural to be able to perform graph analysis on our data. It would be useful to have plugins for different analyses such as PageRank, shortest path, and different search algorithms.
 
-* **Writeable Graph** Currently, our dataset is read-only. A huge feature would be to allow users to edit the graph. This would be a huge task to undertake, but would be great for users that see the need to build graphs interactively.
+* **Writeable Graph** Currently, our implementation is read-only. A huge feature would be to allow users to edit the graph. This would be a huge task to undertake, but would be great for users that see the need to build graphs interactively.
 
+* **Unit Testing and Continuous Integration** We'd like to make it easy to test our separate plugins. It'd be nice to have a testing framework so that when we develop for Celestrium and contribute through pull requests, we can ensure their robustness through automatic unit tests.
 
-
+* **Semantic Versioning** In addition to unit testing and continuous integration, we'd like to make Celestrium easy to develop from by declaring v1.0.0 pursuant to [semantic versioning](http://semver.org/).
 
 ## Conclusion
 
