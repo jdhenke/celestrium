@@ -270,7 +270,7 @@ And that's it! The resulting interface looks like this:
 
 #### Emails
 
-> TODO: Picture
+![image](https://f.cloud.github.com/assets/1238874/1699281/e3284e48-5f8c-11e3-8a2b-e965940ee9f1.png)
 
 ##### `main.coffee`
 This is a standard implementation of the main entry-point to Celestrium.
