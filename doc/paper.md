@@ -101,6 +101,49 @@ So, the current specification dictates that if plugin `A` needs an instance of p
 Ultimately, this architecture formalizes the method by which instances of plugins are accessed by other plugins and allows developers to pass arguments to the necessary plugins.
 In fact, we feel this is a good design approach for *any* interface which has distinct components, because it removes the boilerplate of constructing each plugin manually and providing it the required instances of other plugins.
 
+
+### Plugin Descriptions
+
+ContextMenu
+* a circular popup menu (toggled by pressing ‘m’) with actions concerning selected nodes
+* developers can add new options with `addMenuOption: (menuText, itemFunction, that)`
+
+DataProvider
+* abstract class that developer extends to connect Celestrium to their data
+* developers specify `getLinks(node, nodes, callback)` and `getLinkedNodes(nodes, callback)` functions
+
+GraphModel
+* Core underlying model of the graph
+* contains getter and setter methods for Nodes and Links
+
+GraphView
+* renders graph with data from GraphModel plugin using d3 libraries
+* provides update function to re-render the graph when it changes
+
+KeyListener
+* allows hotkeys to fire events from any plugin
+* built-in hotkeys include ctrl+A to select all nodes, ESC to deselect all nodes, 'm' to toggle the ContextMenu
+
+Layout
+* Manages overall UI layout of page
+* provides functions to add DOM elements to containers in parts of the screen
+
+LinkDistribution
+* provides a variably smoothed PDF of the distribution of link strengths.
+* A slider on the PDF filters links, only weights above that threshold visible on the graph.
+
+NodeSearch
+* Provides an input box to add a single node to the graph
+* developer supplies a method in the constructor to get a list of all nodes in the graph
+
+NodeSelection
+* allows nodes to be selected or unselected
+* provides functions to access the state of the selected nodes
+
+Sliders
+* provides an interface to add sliders to the ui
+* function to add a new slider: `addSlider(label, initialValue, onChange)`
+
 ### Modeling a Graph
 
 Moving from the plugin architecture to a single plugin, the GraphModel plugin, this section discusses how Celestrium models a graph.
@@ -307,7 +350,129 @@ Currently, this proof-of-concept is static, but in the future, it would be neat 
 
 #### Github Collaboration
 
-> TODO: @jhelbert
+The Github dataset shows collaboration between users on Github; the higher the link strength between 2 users, the more public repos they have collaborated on.
+First a python script was written to scrape the Github API and collect data into a JSON format (github_data.txt).
+I found it pretty straightforward to implement the GithubProvider class (code below) to connect this data to Celestrium, especially with the example implementations serving as guidance.
+
+
+
+Looking at the distribution of collaborations, there were many relationships with few repos collaborated on), with some outliers of a very high number of repos collaborated on.
+This distribution inspired a LinkDistributionNormalizer plugin, where link strengths could be transformed linearly, logarithmically, or into percentiles to best fit the distribution of the data.
+
+
+#### GithubProvider
+
+```python
+import json
+class GithubProvider(object):
+  def __init__(self):
+    f = open('github_data.txt','rb')
+    f.readline()
+    f.readline()
+    self.data = json.loads(f.readline())
+  def get_nodes(self):
+    return self.data.keys()
+
+  def get_edges(self, node, otherNodes):
+    result = []
+    for n2 in otherNodes:
+      value = self.data[node["text"]].get(n2["text"])
+      if value is None:
+        value = 0
+      result.append(value)
+    return result
+
+  def get_related_nodes(self, nodes):
+    newNodesSet = set()
+    for node in nodes:
+      relatedNodes = self.data[node['text']].keys()
+      i = 0
+      while i < len(relatedNodes):
+        relatedNode = relatedNodes[i]
+        newNodesSet.add(relatedNode)
+        i += 1
+    return [{"text": node} for node in newNodesSet]
+```
+
+##### main.coffee
+
+```coffeescript
+requirejs.config
+
+  baseUrl: "/celestrium/core/"
+
+  paths:
+    local: "../../"
+
+
+require ["Celestrium"], (Celestrium) ->
+  plugins =
+    Layout:
+      el: document.querySelector("body")
+
+    KeyListener:
+      document.querySelector("body")
+
+    GraphModel:
+      nodeHash: (node) -> node.text
+      linkHash: (link) -> link.source.text + link.target.text
+
+    GraphView: {}
+
+    "Sliders": {}
+    "ForceSliders": {}
+    "NodeSearch":
+        prefetch: "get_nodes"
+      "Stats": {}
+      "NodeSelection": {}
+      "SelectionLayer": {}
+      "NodeDetails": {}
+      "LinkDistribution": {}
+      "LinkDistributionNormalizer": {}
+
+    "local/GithubDataProvider": {}
+
+  # initialize the plugins and execute a callback once done
+  Celestrium.init plugins, (instances) ->
+
+    # this allows all link strengths to be visible
+    instances["GraphView"].getLinkFilter().set("threshold", 0)
+
+```
+
+
+#### DataProvider Implementation
+```coffeescript
+define ["DataProvider"], (DataProvider) ->
+
+  class GithubDataProvider extends DataProvider
+
+    init: (instances) ->
+      super(instances)
+
+
+    getLinks: (node, nodes, callback) ->
+      data =
+        node: JSON.stringify(node)
+        otherNodes: JSON.stringify(nodes)
+      @ajax "get_edges", data, (arrayOfCoeffs) ->
+        callback _.map arrayOfCoeffs, (coeffs, i) ->
+          strength: coeffs
+          base_value: coeffs
+
+    getLinkedNodes: (nodes, callback) ->
+      data =
+        nodes: JSON.stringify(nodes)
+      @ajax "get_related_nodes", data, callback
+```
+
+
+#### Future Work
+The goal of this dataset is to show collaboration relationships on Github.  However, only publicly available data could be used, which restricts this to public repos.
+In addition, the measure of link strength is arbitrary; I used the number of repos they collaborated on.  But should collaboration on a project with a few other people be counted the same as collaboration on a project with hundreds of other users?
+The metric for 'collaboration strength' could certainly be improved on.
+
+Future work would also include connecting the Celestrium DataProvider endpoints to query the live Github API, not needing to download a static version of data.
 
 #### Semantic Networks
 
@@ -562,6 +727,15 @@ Again, because humans most likely would not be able to make sense of so much dat
 
 
 ### General Future Work
+
+> @haosharon, see all the issues we've discussed
+>
+> Additionally, making Celestrium able to read **and write** to the DB would be a whole other ball game.
+>
+> related to infrastructure, declare v1.0.0 pursuant to [semantic versioning](http://semver.org/).
+> this is incredibly practical for developers depending on this.
+>
+> not interesting but worth mentioning unit testing and continuous integration
 
 Celestrium is currently in a v1.0 state. For the future, there are many features we'd like to add.
 
