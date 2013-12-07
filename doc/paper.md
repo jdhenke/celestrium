@@ -300,7 +300,11 @@ define ["DataProvider"], (DataProvider) ->
 
 The most unique thing about the emails dataset is that emails have directions. For this reason, we developed Celestrium to support directed edges. We can see that between many pairs of users, the communication is one-sided many times. Celestrium supports directed edges, so it is very simple for a developer to provide 'directed-ness' in their graphs.
 
-Currently, this proof-of-concept is static, but in the future, it would be neat to see it grow and change dynamically.
+In implementing this, first a python script was written to clean raw data into json for the server to read. The server then digests all the emails and organizes them into a hashtable for easy access.
+
+##### Future Work
+Currently, this proof-of-concept is static, but in the future, it would be neat to see it grow and change dynamically. There is more work to be done on the back end in terms of speed. When adding nodes to the graph, it is very easy to have sudden large increases in data when we land on a user that has a high email frequency. At these times, Celestrium can be seen to be slightly laggy.
+
 #### Github Collaboration
 
 > TODO: @jhelbert
