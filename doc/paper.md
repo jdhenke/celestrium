@@ -274,7 +274,129 @@ And that's it! The resulting interface looks like this:
 
 #### Github Collaboration
 
-> TODO: @jhelbert
+The Github dataset shows collaboration between users on Github; the higher the link strength between 2 users, the more public repos they have collaborated on.
+First a python script was written to scrape the Github API and collect data into a JSON format (github_data.txt).
+I found it pretty straightforward to implement the GithubProvider class (code below) to connect this data to Celestrium, especially with the example implementations serving as guidance.
+
+
+
+Looking at the distribution of collaborations, there were many relationships with few repos collaborated on), with some outliers of a very high number of repos collaborated on.
+This distribution inspired a LinkDistributionNormalizer plugin, where link strengths could be transformed linearly, logarithmically, or into percentiles to best fit the distribution of the data.
+
+
+#### GithubProvider
+
+```python
+import json
+class GithubProvider(object):
+  def __init__(self):
+    f = open('github_data.txt','rb')
+    f.readline()
+    f.readline()
+    self.data = json.loads(f.readline())
+  def get_nodes(self):
+    return self.data.keys()
+
+  def get_edges(self, node, otherNodes):
+    result = []
+    for n2 in otherNodes:
+      value = self.data[node["text"]].get(n2["text"])
+      if value is None:
+        value = 0
+      result.append(value)
+    return result
+
+  def get_related_nodes(self, nodes):
+    newNodesSet = set()
+    for node in nodes:
+      relatedNodes = self.data[node['text']].keys()
+      i = 0
+      while i < len(relatedNodes):
+        relatedNode = relatedNodes[i]
+        newNodesSet.add(relatedNode)
+        i += 1
+    return [{"text": node} for node in newNodesSet]
+```
+
+##### main.coffee
+
+```coffeescript
+requirejs.config
+
+  baseUrl: "/celestrium/core/"
+
+  paths:
+    local: "../../"
+
+
+require ["Celestrium"], (Celestrium) ->
+  plugins =
+    Layout:
+      el: document.querySelector("body")
+
+    KeyListener:
+      document.querySelector("body")
+
+    GraphModel:
+      nodeHash: (node) -> node.text
+      linkHash: (link) -> link.source.text + link.target.text
+
+    GraphView: {}
+
+    "Sliders": {}
+    "ForceSliders": {}
+    "NodeSearch":
+        prefetch: "get_nodes"
+      "Stats": {}
+      "NodeSelection": {}
+      "SelectionLayer": {}
+      "NodeDetails": {}
+      "LinkDistribution": {}
+      "LinkDistributionNormalizer": {}
+
+    "local/GithubDataProvider": {}
+
+  # initialize the plugins and execute a callback once done
+  Celestrium.init plugins, (instances) ->
+
+    # this allows all link strengths to be visible
+    instances["GraphView"].getLinkFilter().set("threshold", 0)
+
+```
+
+
+#### DataProvider Implementation
+```coffeescript
+define ["DataProvider"], (DataProvider) ->
+
+  class GithubDataProvider extends DataProvider
+
+    init: (instances) ->
+      super(instances)
+
+
+    getLinks: (node, nodes, callback) ->
+      data =
+        node: JSON.stringify(node)
+        otherNodes: JSON.stringify(nodes)
+      @ajax "get_edges", data, (arrayOfCoeffs) ->
+        callback _.map arrayOfCoeffs, (coeffs, i) ->
+          strength: coeffs
+          base_value: coeffs
+
+    getLinkedNodes: (nodes, callback) ->
+      data =
+        nodes: JSON.stringify(nodes)
+      @ajax "get_related_nodes", data, callback
+```
+
+
+#### Future Work
+The goal of this dataset is to show collaboration relationships on Github.  However, only publicly available data could be used, which restricts this to public repos.
+In addition, the measure of link strength is arbitrary; I used the number of repos they collaborated on.  But should collaboration on a project with a few other people be counted the same as collaboration on a project with hundreds of other users?
+The metric for 'collaboration strength' could certainly be improved on.
+
+Future work would also include connecting the Celestrium DataProvider endpoints to query the live Github API, not needing to download a static version of data.
 
 #### Semantic Networks
 
