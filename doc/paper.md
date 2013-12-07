@@ -270,7 +270,83 @@ And that's it! The resulting interface looks like this:
 
 #### Emails
 
-> TODO: @haosharon
+> TODO: Picture
+
+##### `main.coffee`
+This is a standard implementation of the main entry-point to Celestrium.
+In this implementation, we define an ordering for our plugins based on what we think will allow for the best usability in exploring this dataset.
+
+```coffeescript
+requirejs.config
+  baseUrl: "/scripts/celestrium/core/"
+
+  paths:
+    local: "../../"
+
+require ["Celestrium"], (Celestrium) ->
+
+  plugins =
+
+    Layout:
+      el: document.querySelector("body")
+
+    KeyListener:
+      document.querySelector("body")
+
+    GraphModel:
+      nodeHash: (node) -> node.text
+      linkHash: (link) -> link.source.text + link.target.text
+
+    GraphView: {}
+    Sliders: {}
+    ForceSliders:
+      pluginOrder: 2
+    NodeSearch:
+      pluginOrder: 1
+      prefetch: "get_nodes"
+
+    Stats:
+      pluginOrder: 2
+    NodeSelection: {}
+    LinkDistribution:
+      pluginOrder: 3
+    SelectionLayer: {}
+    "local/EmailDataProvider": {}
+
+  Celestrium.init plugins, (instances) ->
+    instances["GraphView"].getLinkFilter().set("threshold", 0)
+```
+
+#### `EmailDataProvider.coffee`
+This is a very simple example of a DataProvider implementation that communicates with a backend server. `EmailDataProvider` hits the server with an ajax request and processes the returned data so that Celestrium can render it.
+
+```coffeescript
+define ["DataProvider"], (DataProvider) ->
+
+  class EmailDataProvider extends DataProvider
+
+    init: (instances) ->
+      super(instances)
+
+    getLinks: (node, nodes, callback) ->
+      data =
+        node: JSON.stringify(node)
+        otherNodes: JSON.stringify(nodes)
+      @ajax "get_edges", data, (links) ->
+        callback links
+
+    getLinkedNodes: (nodes, callback) ->
+      data =
+        nodes: JSON.stringify(nodes)
+      @ajax "get_related_nodes", data, callback
+```
+
+The most unique thing about the emails dataset is that emails have directions. For this reason, we developed Celestrium to support directed edges. We can see that between many pairs of users, the communication is one-sided many times. Celestrium supports directed edges, so it is very simple for a developer to provide 'directed-ness' in their graphs.
+
+In implementing this, first a python script was written to clean raw data into json for the server to read. The server then digests all the emails and organizes them into a hashtable for easy access.
+
+##### Future Work
+Currently, this proof-of-concept is static, but in the future, it would be neat to see it grow and change dynamically. There is more work to be done on the back end in terms of speed. When adding nodes to the graph, it is very easy to have sudden large increases in data when we land on a user that has a high email frequency. At these times, Celestrium can be seen to be slightly laggy.
 
 #### Github Collaboration
 
@@ -660,6 +736,30 @@ Again, because humans most likely would not be able to make sense of so much dat
 > this is incredibly practical for developers depending on this.
 >
 > not interesting but worth mentioning unit testing and continuous integration
+
+Celestrium is currently in a v1.0 state. For the future, there are many features we'd like to add.
+
+* **Minimap** when a user explores a very large dataset, it is sometimes easy to get lost in the low-level details. We'd like to provide a minimap so users can always have a sense of the entire graph.
+
+* **Clustering** Celestrium currently uses D3's force-directed layout. It would be nice to be able to define some clustering/grouping of nodes, perhaps through positioning or drawing a shape around the group.
+
+* **Alternate Layouts** In addition to clustering, there are many other D3 layouts that we could potentially use. (Grid, linear, hierarchical, etc)
+
+* **Dynamically update graph** Currently, updates from the server only show when we make another request. If we could use some polling functionality, or perhaps sockets, we could dynamically show changes from the server.
+
+* **Interactive tutorial** Since Celestrium provides a lot of plugins and features, it would be nice if we could provide an interactive tutorial for the user to get started using Celestrium to analyze datasets. There are many libraries available to do this, such as [`intro.js`](http://usablica.github.io/intro.js/).
+
+* **Serialization and caching** On every addition to the graph, we make a request to the server. In efforts to optimize performance, we could use Javascript's `localStorage` or `sessionStorage` to make this happen.
+
+* **Custom mapping to visual dimensions** When nodes or edges have continuous values, we want to allow the user to specify how that should be represented. Currently, we use histograms to bin link strengths. However, it could be possible that the developer can define their own views to display values and attributes of the nodes and links.
+
+* **Graph analysis** Since we have such a well formed graph, it seems natural to be able to perform graph analysis on our data. It would be useful to have plugins for different analyses such as PageRank, shortest path, and different search algorithms.
+
+* **Writeable Graph** Currently, our implementation is read-only. A huge feature would be to allow users to edit the graph. This would be a huge task to undertake, but would be great for users that see the need to build graphs interactively.
+
+* **Unit Testing and Continuous Integration** We'd like to make it easy to test our separate plugins. It'd be nice to have a testing framework so that when we develop for Celestrium and contribute through pull requests, we can ensure their robustness through automatic unit tests.
+
+* **Semantic Versioning** In addition to unit testing and continuous integration, we'd like to make Celestrium easy to develop from by declaring v1.0.0 pursuant to [semantic versioning](http://semver.org/).
 
 ## Conclusion
 
