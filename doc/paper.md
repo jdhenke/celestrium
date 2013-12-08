@@ -10,9 +10,14 @@ Professor Madden
 ## Abstract
 
 Celestrium is a collection of requirejs modules which enables developers to easily create interfaces to visualize and explore large graph based datasets.
-It is designed to be database agnostic and minimize the activation energy required by developers, easily interfacing with JSON endpoints to populate the visualization.
-This paper discusses how and why Celestrium's plugin architecture was designed the way it is and argues it could be useful in other contexts.
-Additionally, it explains implementations of several interfaces which used Celestrium, each for different data sets, and compares the necessary lines of code, showing Celestrium to be broadly useful without requiring much additional effort.
+It is designed to be database agnostic and minimize the activation energy required by developers.
+It easily interfaces with JSON server endpoints to populate the visualization.
+This paper presents an example visualization of a random graph created by using celestrium.
+It then discusses how and why Celestrium's plugin architecture was designed the way it is and argues it could be useful in other contexts.
+Additionally, Celestrium was purposefully developed to support three different data sets in an effort to keep its use cases general as well as inspire a diverse set of functionalities.
+Celestrium's effectiveness is evaluated through qualitative descriptions of these interface's implementations and is found to be general and powerful enough to support all of them.
+Many ideas are presented as possibilities for future work.
+This includes a quantative analysis of the scalability of the visualization itself, which found Celestrium to be very responsive for reasonably sized data sets which humans could understand but also established its limitations, which could be improved in the future.
 
 ## Table of Contents
 
@@ -37,38 +42,39 @@ In Celestrium, nodes can be clicked, selected and dragged, continuously altering
 However, they are only responsible for rendering the graph's layout.
 Ultimately, what separates Celestrium from VivaGraphJS and all other libraries is it has extra plug-and-play features builtin such as:
 
-* Being able to manipulate and view distributions of link strengths
+* Being able to manipulate and view the distributions of link strengths
 * Running graph analysis algorithms on the visible subgraph
-* Providing an API to easily integrate with JSON server endpoints
+* Providing an API to easily communicate with JSON server endpoints
 
 In a sense, Celestrium takes graph visualization platforms further by providing default, but replaceable, implementations of common functionalities to make creating graph visualizations easier.
 Celestrium is intended for the case where a user wants to visually analyze a graph database which is too big to understand all at once and so must be investigated from a particular node or nodes outwards, bottom up.
 
 ## Example Interface
 
-Here is an example of an interface that was created using Celestrium, which renders a graph with nodes as the phonetic alphabet and randomly generated links between them.
+Here is an example of an interface that was created using Celestrium, which renders a graph with nodes as the phonetic alphabet and randomly generates links between them.
 
 ![image](https://f.cloud.github.com/assets/1418690/1701103/cc9a13f0-6040-11e3-815d-3be41a920182.png)
 
-You can see the graph displayed on the left and a collection of tools on the right.
-Note that this is not the entire graph.
+First, note that this is not the entire graph.
 Celestrium allows the user to dynamically bring in parts of the entire graph.
 A user can do this by searching for a specific node and adding it using the Node Search plugin.
 Additionally, a user can pull in neighbors of nodes already in Celestrium and explore the graph by continually branching out from desired nodes.
-Celestrium also automatically includes the link between any two nodes on the graph, if it exists, keeping the visualization consistent with the full graph.
+Celestrium also automatically includes the links between the nodes currently on the graph, keeping the visualized graph consistent with the entire graph.
 
 The graph itself is logically composed of nodes and edges.
 Each node can have a brief text description.
-Nodes can be selected, and are shown in blue when they are.
+Nodes can be selected and are shown in blue when they are.
 Links between nodes can be undirected, directed in one direction or bidirectional.
 
-Moving to the toolbar on the right, these each provide ways to manipulate or gain access about the current graph.
+Moving to the toolbar on the right, these each provide ways to manipulate or gain access to information about the current graph.
 The "Spacing" slider allows the nodes to be moved closer or farther apart from each other.
 The "Smooth" slider allows the granularity of the Link Strength Distribution to be adjusted.
 The "Link Strength Distribution" chart shows an approximate PDF of the link strength distributions currently present in Celestrium.
 The vertical, black bar is the minimum strength a link must have to be rendered.
 This allows a user to dynamically adjust the connectedness of the graph so it is understandable to them.
 Lastly, "Node Search" is an autocompleted text input box which allows a user to add any node they wish to Celestrium.
+
+There are more plugins not included in this example and are described in the next section.
 
 With a basic understanding of the types of interfaces Celestrium allows to be built, we now describe how Celestrium itself is implemented.
 
@@ -84,14 +90,19 @@ The difference may or may not be obvious, but it is important in understanding C
 - **Definitions**, conceptually, provide the *ability* to create a certain type of object.
 - **Instances** - are the *instantiated objects* themselves.
 
-To make this concrete, consider the GraphModel plugin.
-The *definition* is the class definition in Coffeescript, but an *instance* is a GraphModel object.
-This may seem trivial, but requirejs only provides the definitions, not the instances, which is an issue because plugins almost always need access to the *instance* of another plugin and more specifically, they need access to the *same* instance.
+To make this concrete, consider three plugins which interact with eachother.
 
-For example, if the GraphView instance was listening to a different GraphModel instance than the DataProvider instance, (which adds nodes and links to it,) the GraphView would never receive that information because it's listening to a completely different object.
+* GraphView is responsible for rendering the graph on the screen and listens for changes to the GraphModel
+* GraphModel contains the underlying node and link objects which describe the currently visualize graph
+* DataProvider listens to the GraphView for certain user actions and when fired, contacts the server and updates the GraphModel with new nodes or links
+
+The *definition* of GraphModel is the class definition in Coffeescript, but an *instance* is a GraphModel object.
+This may seem trivial, but requirejs only provides the definitions, not the instances, which is an issue because plugins almost always need access to the instance of another plugin and more specifically, they need access to the *same* instance.
+
+If the GraphView instance was listening to a different GraphModel instance than the DataProvider instance, the GraphView would never receive that information because it's listening to a completely different object.
 This seems to suggest a singleton pattern, where each class automatically creates an instance of itself and attaches it to the class definition.
 However, plugins often need parameters in their constructor that must be specified by the developer somehow i.e. the DOM element in which to house the workspace.
-Thus plugin definitions can't automatically instantiate themselves without providing an entry for custom parameters.
+Thus plugin definitions can't automatically instantiate themselves without providing an entry for custom parameters by the developer.
 
 Celestrium addresses these needs by separating the entry of parameters and instances of other plugins into these separate places:
 
@@ -118,31 +129,36 @@ So, `Celestrium.init` accepts a dictionary, `pluginsDict`, with keys being requi
 So iterating through `pluginsDict`, a list of plugin instances, `instances`, is maintained, and each plugin is
 
 * instantiated with it's given arguments
-* `init`ed with `instances` as the argument
+* `init`ed with `instances` as the argument - this includes all previously created instances from the previous iterations
 * added to `instances` itself, so later plugins may access it.
 
 An issue here is that no circular dependencies may exist.
-It is unclear if maintaining this invariant is good design anyway or a limitation of this approach.
+It is unclear if maintaining this invariant is good design regardless or a limitation of this approach.
 
 An alternative could be to perform two passes.
 On the first, each plugin is created and added to the `instances` dictionary.
-Then on the second pass, each instance would be `init`ed with the dictionary of every instance, even the last one.
+Then on the second pass, each instance would be `init`ed with the dictionary of every instance, so even the first `init`ed plugin has access to the instance of the last `init`ed plugin.
 This was not chosen as it then exposes plugins which have not yet been `init`ed to be used by other plugins.
 So, the current specification dictates that if plugin `A` needs an instance of plugin `B`, `B` should appear before `A` in the dictionary.
 
-Ultimately, this architecture formalizes the method by which instances of plugins are accessed by other plugins and allows developers to pass arguments to the necessary plugins.
+Ultimately, this architecture formalizes the method by which instances of plugins are accessed by other plugins and allows developers to pass arguments to the necessary plugins as well.
 In fact, we feel this is a good design approach for *any* interface which has distinct components, because it removes the boilerplate of constructing each plugin manually and providing it the required instances of other plugins.
 
-
 ### Plugin Descriptions
+
+Again, Celestrium is composed of many individual plugins which depend on each other.
+The default plugins included with Celestrium are described here.
+Note that an interface can choose which of these plugins to include and can also define their own plugins to be included in this infrastructure.
 
 ContextMenu
 * a circular popup menu (toggled by pressing ‘m’) with actions concerning selected nodes
 * developers can add new options with `addMenuOption: (menuText, itemFunction, that)`
 
 DataProvider
-* abstract class that developer extends to connect Celestrium to their data
-* developers specify `getLinks(node, nodes, callback)` and `getLinkedNodes(nodes, callback)` functions
+* abstract class that developer extends to connect Celestrium to their data set, in most cases a server
+* developers specify these two functionalities
+  * `getLinks(node, nodes, callback)` which should call `callback` with an array of links between `node` and each node in `nodes` respectively.
+  * `getLinkedNodes(nodes, callback)` should call `callback` with an array of nodes which are neighbors of any node in `nodes`.
 
 GraphModel
 * Core underlying model of the graph
@@ -150,7 +166,7 @@ GraphModel
 
 GraphView
 * renders graph with data from GraphModel plugin using d3 libraries
-* provides update function to re-render the graph when it changes
+* provides update function to re-render the graph when GraphModel changes
 
 KeyListener
 * allows hotkeys to fire events from any plugin
@@ -162,7 +178,7 @@ Layout
 
 LinkDistribution
 * provides a variably smoothed PDF of the distribution of link strengths.
-* A slider on the PDF filters links, only weights above that threshold visible on the graph.
+* A slider on the PDF filters links, such that only links with weight about the threshold are visible on the graph.
 
 NodeSearch
 * Provides an input box to add a single node to the graph
@@ -176,10 +192,11 @@ Sliders
 * provides an interface to add sliders to the ui
 * function to add a new slider: `addSlider(label, initialValue, onChange)`
 
+Now that all the plugins have been listed, two plugins are next discussed in more detail: GraphModel and DataProvider.
+
 ### Modeling a Graph
 
-Moving from the plugin architecture to a single plugin, the GraphModel plugin, this section discusses how Celestrium models a graph.
-
+GrahpModel defines how Celestrium models a graph.
 d3's force directed layout is the what currently renders the actual graph onscreen, so any deviation from d3's graph representation would require the data to be put into that format anyway.
 So, it seemed optimal, practically speaking, to use d3's representation, but it was not attempted to optimize for other uses cases.
 This may be worth investigating if alternative layout methods are used.
@@ -187,20 +204,18 @@ This may be worth investigating if alternative layout methods are used.
 d3 uses an array of javascript objects to represent the nodes.
 Links are stored as an array of javascript objects with `source` and `target` attributes which are the actual node objects themselves.
 
-> TODO: scalability/bottleneck analysis
+### Interfacing with the Full Graph
 
-### Interfacing with the Backend
-
-Now that Celestrium can internally represent a graph, it must interface with the source of the data.
-To do so, Celestrium provides DataProvider.
-DataProvider is an abstract class definition which need only be extended to include the functionality to connect to the server in order to fulfill the following specification:
+Now that Celestrium can internally represent a graph, it must interface with the full source of the data.
+To do so, Celestrium provides the DataProvider plugin.
+DataProvider is an abstract class definition which only requires two functions to be implemented to allow Celestrium to interact with its data source properly.
 
 #### `getLinks(node, nodes, callback)`
 
 * `node` is a single node in the graph
 * `nodes` is a list of nodes in the graph
 * `callback` is a function which should be called with an array of links, `A`, st. `A[i]` is the link from `node` to `nodes[i]`.
-  * A link should be a javascript object with a `strength` attribute in `[0,1]` and can optionally have a `direction` attribute in `{forward, backward, bidrectional}` indicating the a directed link.
+  * A link should be a javascript object with a `strength` attribute in `[0,1]` and can optionally have a `direction` attribute in `{forward, backward, bidrectional}` indicating the directionality of that link.
 
 #### `getLinkedNodes(nodes, callback)`
 
@@ -214,31 +229,24 @@ For data sets that cannot accomplish this, it is left to the developer to provid
 
 ## Three Interface Implementations
 
-*It's hard to think about thinking without thinking about thinking about something.*
-
-In this spirit, this section provides concrete examples of using Celestrium.
+This section provides concrete examples of interfaces using Celestrium.
 The first is an interface which has no backend - it simply produces random links between nodes named after the Phonetic Alphabet.
-This random interface is then used as a baseline in comparison to implementations of real data sets.
+This random interface is then used as a baseline in comparison to implementations of three real data sets.
 Because some data sets generate their graphs differently i.e. sparse matrices vs. redirecting to a REST API vs. static data, only the main script and data provider scripts are compared, however other scripts which were necessary for each interface to function are described in each section for reference.
 
-### Example Interfaces
-
-#### Random
+### Baseline - Random
 
 This example shows the necessary code to create the functionality for a random graph generator.
 This implementation is also more thoroughly explained to illustrate the general structure of an implementation.
 
 > NOTE: `PhoneticAlphabet` is just an array of strings which is the phonetic alphabet.
 
-##### `main.coffee`
+#### `main.coffee`
 
 ```coffeescript
-requirejs.config
-  baseUrl: "/celestrium/core/"
-  paths:
-    local: "../../"
+requirejs.config {baseUrl: "/js"}
 
-require ["Celestrium", "local/PhoneticAlphabet"],
+require ["Celestrium", "PhoneticAlphabet"],
 (Celestrium, PhoneticAlphabet) ->
 
   plugins =
@@ -256,37 +264,39 @@ require ["Celestrium", "local/PhoneticAlphabet"],
     "LinkDistribution": {}
     "NodeSearch":
       local: PhoneticAlphabet
-    "local/RandomDataProvider": {}
+    "RandomDataProvider": {}
 
   Celestrium.init plugins
 ```
 
-This is the entry point for code execution.
+This script is the entry point for code execution.
 
-The first lines configure different requirejs paths.
-
-* `baseUrl` should be the path to the compiled output of Celestrium's `core-coffee` directory relative to the page it is included on.
-* `local` specifies the path to the compiled output of plugins that were created specifically for this example and are not part of Celestrium.
-This path is relative to `baseUrl`.
+First, it configures the location where requirejs finds its modules.
 
 Then `require` is used to load the `Celestrium` module definition and initiate the desired plugins for this interface.
 `Celestrium.init` expects a dictionary with keys as the `requirejs` path to the plugin to be instantiated and values as the object to be fed as an argument to that plugin's constructor, as described in the Implementation Section.
 
-##### `random.coffee`
+#### `RandomDataProvider.coffee`
 
 ```coffeescript
-define ["DataProvider", "local/PhoneticAlphabet"],
+define ["DataProvider", "PhoneticAlphabet"],
 (DataProvider, PhoneticAlphabet) ->
   class RandomDataProvider extends DataProvider
+
     getLinks: (node, nodes, callback) ->
       callback _.map nodes, () ->
-        "strength": Math.max(0, (Math.random() - 0.5) * 2)
-        "direction": _.sample [null, "forward", "backward", "bidirectional"]
+        "strength": Math.max(0, 2 * Math.random() - 1)
+        "direction": _.sample [
+          null,
+          "forward",
+          "backward",
+          "bidirectional"
+        ]
+
     getLinkedNodes: (nodes, callback) ->
       callback _.chain(PhoneticAlphabet)
         .sample(5)
-        .map (word) ->
-          "text": word
+        .map((word) -> {"text": word})
         .value()
 ```
 
@@ -296,15 +306,13 @@ It's directionality is also random.
 
 `getLinkedNodes` returns all nodes linked to any node in `nodes`, which in this case is 5 random entries from the Phonetic Alphabet.
 
-And that's it! The resulting interface looks like this:
+And that's it! The resulting interface can be seen in the Example Interface section above.
 
-> TODO: Picture
-
-#### Emails
+### Interface 1/3 - Emails
 
 ![image](https://f.cloud.github.com/assets/1238874/1699336/b163b194-5f92-11e3-9e97-023cd398f5c3.png)
 
-##### `main.coffee`
+### `main.coffee`
 This is a standard implementation of the main entry-point to Celestrium.
 In this implementation, we define an ordering for our plugins based on what we think will allow for the best usability in exploring this dataset.
 
@@ -349,7 +357,7 @@ require ["Celestrium"], (Celestrium) ->
     instances["GraphView"].getLinkFilter().set("threshold", 0)
 ```
 
-#### `EmailDataProvider.coffee`
+### `EmailDataProvider.coffee`
 This is a very simple example of a DataProvider implementation that communicates with a backend server. `EmailDataProvider` hits the server with an ajax request and processes the returned data so that Celestrium can render it.
 
 ```coffeescript
@@ -373,63 +381,31 @@ define ["DataProvider"], (DataProvider) ->
       @ajax "get_related_nodes", data, callback
 ```
 
-The most unique thing about the emails dataset is that emails have directions. For this reason, we developed Celestrium to support directed edges. We can see that between many pairs of users, the communication is one-sided many times. Celestrium supports directed edges, so it is very simple for a developer to provide 'directed-ness' in their graphs.
+The most unique thing about the emails dataset is that emails have directions. For this reason, we developed Celestrium to support directed edges.
+We can see that between many pairs of users, the communication is one-sided many times.
+Celestrium supports directed edges, so it is very simple for a developer to provide 'directed-ness' in their graphs.
 
 In implementing this, first a python script was written to clean raw data into json for the server to read. The server then digests all the emails and organizes them into a hashtable for easy access.
 
-##### Future Work
-Currently, this proof-of-concept is static, but in the future, it would be neat to see it grow and change dynamically. There is more work to be done on the back end in terms of speed. When adding nodes to the graph, it is very easy to have sudden large increases in data when we land on a user that has a high email frequency. At these times, Celestrium can be seen to be slightly laggy.
+### Future Work
 
-#### Github Collaboration
+Currently, this proof-of-concept is static, but in the future, it would be neat to see it grow and change dynamically.
+There is more work to be done on the back end in terms of speed.
+When adding nodes to the graph, it is very easy to have sudden large increases in data when we land on a user that has a high email frequency.
+At these times, Celestrium can be seen to be slightly laggy.
 
-The Github dataset shows collaboration between users on Github; the higher the link strength between 2 users, the more public repos they have collaborated on.
-First a python script was written to scrape the Github API and collect data into a JSON format (github_data.txt).
-I found it pretty straightforward to implement the GithubProvider class (code below) to connect this data to Celestrium, especially with the example implementations serving as guidance.
+### Interface 2/3 - Github Collaboration
 
+The Github dataset shows collaboration between users on Github; the higher the link strength between 2 users, the more public repos they have collaborated on together.
+First a python script was written to scrape the Github API and collect data into a JSON format.
+It was found to be straightforward to implement the GithubProvider class (code below) to connect this data to Celestrium, especially with the example implementations serving as guidance.
 
 ![image](https://f.cloud.github.com/assets/774269/1699263/f6d3cd38-5f8b-11e3-990c-15a56594ea29.png)
 
-
-
-Looking at the distribution of collaborations, there were many relationships with few repos collaborated on), with some outliers of a very high number of repos collaborated on.
+Looking at the distribution of collaborations, there were many relationships with few repos collaborated on, with some outliers of a very high number of repos collaborated on.
 This distribution inspired a LinkDistributionNormalizer plugin, where link strengths could be transformed linearly, logarithmically, or into percentiles to best fit the distribution of the data.
 
-
-#### GithubProvider
-
-```python
-import json
-class GithubProvider(object):
-  def __init__(self):
-    f = open('github_data.txt','rb')
-    f.readline()
-    f.readline()
-    self.data = json.loads(f.readline())
-  def get_nodes(self):
-    return self.data.keys()
-
-  def get_edges(self, node, otherNodes):
-    result = []
-    for n2 in otherNodes:
-      value = self.data[node["text"]].get(n2["text"])
-      if value is None:
-        value = 0
-      result.append(value)
-    return result
-
-  def get_related_nodes(self, nodes):
-    newNodesSet = set()
-    for node in nodes:
-      relatedNodes = self.data[node['text']].keys()
-      i = 0
-      while i < len(relatedNodes):
-        relatedNode = relatedNodes[i]
-        newNodesSet.add(relatedNode)
-        i += 1
-    return [{"text": node} for node in newNodesSet]
-```
-
-##### main.coffee
+#### `main.coffee`
 
 ```coffeescript
 requirejs.config
@@ -438,7 +414,6 @@ requirejs.config
 
   paths:
     local: "../../"
-
 
 require ["Celestrium"], (Celestrium) ->
   plugins =
@@ -475,8 +450,8 @@ require ["Celestrium"], (Celestrium) ->
 
 ```
 
+#### `GithubDataProvider.coffee`
 
-#### DataProvider Implementation
 ```coffeescript
 define ["DataProvider"], (DataProvider) ->
 
@@ -501,26 +476,25 @@ define ["DataProvider"], (DataProvider) ->
       @ajax "get_related_nodes", data, callback
 ```
 
-
 #### Future Work
+
 The goal of this dataset is to show collaboration relationships on Github.  However, only publicly available data could be used, which restricts this to public repos.
 In addition, the measure of link strength is arbitrary; I used the number of repos they collaborated on.  But should collaboration on a project with a few other people be counted the same as collaboration on a project with hundreds of other users?
 The metric for 'collaboration strength' could certainly be improved on.
 
 Future work would also include connecting the Celestrium DataProvider endpoints to query the live Github API, not needing to download a static version of data.
 
-#### Semantic Networks
+### Interface 3/3 - Semantic Networks
 
 The third data set that we built an interface for using Celestrium was a semantic network.
-More specifically, it was showing the results of performing **inference** over a semantic network.
-More on this later.
-Nodes represented every day concepts and the links showed closely they were related.
+More specifically, it was showing the results of performing **inference** over a semantic network (this is more well defined later.)
+Nodes represented every day concepts and the links showed closely they were inferred to be semantically related.
 
-##### Example of Semantic Network Interface
+#### Example of Semantic Network Interface
 
 ![image](https://f.cloud.github.com/assets/1418690/1689464/df3411e8-5e22-11e3-8477-683173eb9d24.png)
 
-##### Main Script
+#### Main Script
 ```coffeescript
 localStorage.clear()
 requirejs.config
@@ -570,7 +544,7 @@ require ["Celestrium"], (Celestrium) ->
     success: main
 ```
 
-##### `DataProvider` Implementation
+#### `DataProvider` Implementation
 
 ```coffeescript
 # interface to uap's semantic network
@@ -610,14 +584,27 @@ define ["DataProvider"], (DataProvider) ->
 ```
 
 The most interesting part of this implementation is that `ConceptProvider` doesn't define a link's strength, only a `coeffs` parameter, then it uses `DimSlider`'s `setLinkString` function as a filter on the link.
-This because the link strength's are actually a function of a polynomial in value of the **dimensionality** of the inference process, whose value is maintained in `DimSlider`.
-So on the server, each link's polynomial is constructed rather than a single value, the coefficients sent to `DataProvider`, then `DimSlider` uses the current value of the "Dimensionality Slider" in the interface (see the example picture) to actually define the link's strength numerically.
+This because the link strength's are actually a function of a polynomial in the **dimensionality** of the inference process, whose value is maintained in `DimSlider`.
+So on the server, each link's polynomial is constructed rather than a single value, the coefficients are sent to `DataProvider`, then `DimSlider` uses the current value of the "Dimensionality Slider" in the interface (see the example picture) to actually define the link's strength numerically.
+Therefore, when the slider is adjusted in the interface, the link strengths are changed and visualized in realtime.
 
-Firstly, Celestrium's flexibility in defining the strength of a link was critical in creating this interface.
+#### Review of Celestrium
+
+Celestrium's flexibility in defining the strength of a link was critical in creating this interface.
+This interface also prompted the design of the `linkFilter` feature in DataProvider, allowing the strength of the link to be defined with respect to the current state of the client interface.
 Additionally, this extra slider inspired the creation of the `Sliders` plugin, and allows this "Dimensionality Slider" to integrate seemlessly into the UI next to the other sliders.
 
-Future work in this interface is to include different types of nodes, which is something that Celestrium currently doesn't prohibit, but doesn't provide express functionality for, and so perhaps a next step is to provide functionality that supports have distinct types of nodes.
+Another critical part of this interface is that adjusting the "Dimensionality Slider" updates the graph in real time.
+This was made by possible and actually straightforward through Celestrium's design.
+GraphView listens for changes to GraphModel and automatically updates itself.
+This made it very straightforward to update the graph because all that was needed was to modify the underlying GraphModel and the interface updated itself without any extra effort specific to this data set.
+
+Future work in this interface would be to include different types of nodes, which is something that Celestrium currently doesn't prohibit, but doesn't provide express functionality for.
+So, perhaps a next step is to provide functionality that supports having distinct types of nodes.
 More details of the specific needs of this dataset should be investigated before deciding on the specific features this would entail.
+
+In summary, creating this interface definitely helped evolve several features of Celestrium and validated several aspects of its design as well.
+It was found to be found to be very easy to establish the frontend for this data set, which is ultimately the goal of Celestrium.
 
 ## Suggested Future Work
 
@@ -753,19 +740,9 @@ Additionally, a force directed layout aproach may fundamentally not be feasable 
 Or, one could run the layout internally without updating the UI, then simply render the final result of the layout process at the end.
 Again, because humans most likely would not be able to make sense of so much data, making this interface usable at this scale may not be a priority, but we suggest at least detecting when the layout iterations become slow and handling it accordingly so the user is not left simply staring at a faltering visualization.
 
-
 ### General Future Work
 
-> @haosharon, see all the issues we've discussed
->
-> Additionally, making Celestrium able to read **and write** to the DB would be a whole other ball game.
->
-> related to infrastructure, declare v1.0.0 pursuant to [semantic versioning](http://semver.org/).
-> this is incredibly practical for developers depending on this.
->
-> not interesting but worth mentioning unit testing and continuous integration
-
-Celestrium is currently in a v1.0 state. For the future, there are many features we'd like to add.
+For the future, there are many features we'd like to add.
 
 * **Minimap** when a user explores a very large dataset, it is sometimes easy to get lost in the low-level details. We'd like to provide a minimap so users can always have a sense of the entire graph.
 
@@ -791,4 +768,8 @@ Celestrium is currently in a v1.0 state. For the future, there are many features
 
 ## Conclusion
 
-> TODO
+Celestrium was created out of the desire to reduce the activation energy in creating graph visualization and exploration tools for a variety of different data sets.
+To that end, it created it's own plugin architecture and plugins to allow interfaces to be created with only the desired components.
+In using Celestrium for different data sets, it was found that it was general enough to handle each of them and provide meaningful interfaces.
+However, their definitely remain opportunities for future work to improve Celestrium, ranging from logistical improvements to more technical subjects.
+Ultimately, we feel we have created a very practical tool that can be immediately put to use.
