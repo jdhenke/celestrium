@@ -610,13 +610,6 @@ Additionally, this extra slider inspired the creation of the `Sliders` plugin, a
 Future work in this interface is to include different types of nodes, which is something that Celestrium currently doesn't prohibit, but doesn't provide express functionality for, and so perhaps a next step is to provide functionality that supports have distinct types of nodes.
 More details of the specific needs of this dataset should be investigated before deciding on the specific features this would entail.
 
-
-### Implementation Cost Comparisons
-
-> TODO:
-> * compare the each implementation's main and data provider wrt. lines of code
-> * graphs would be good
-
 ## Future Work
 
 Now that we've seen what Celestrium can do, it is worth detailing it's limitations and ideas for new functionality, the subjects of the following sections.
