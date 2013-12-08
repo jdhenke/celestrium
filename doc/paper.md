@@ -14,7 +14,16 @@ It is designed to be database agnostic and minimize the activation energy requir
 This paper discusses how and why Celestrium's plugin architecture was designed the way it is and argues it could be useful in other contexts.
 Additionally, it explains implementations of several interfaces which used Celestrium, each for different data sets, and compares the necessary lines of code, showing Celestrium to be broadly useful without requiring much additional effort.
 
-## Intro
+## Table of Contents
+
+* Introduction
+* Example Interface
+* Celestrium Implementation
+* Three Interface Implementations
+* Suggested Future Work
+* Conclusion
+
+## Introduction
 
 Celestrium is a frontend architecture for the web to visualize graphs.
 Prior to Celestrium, several javascript graph visualization frameworks existed.
@@ -63,7 +72,7 @@ Lastly, "Node Search" is an autocompleted text input box which allows a user to 
 
 With a basic understanding of the types of interfaces Celestrium allows to be built, we now describe how Celestrium itself is implemented.
 
-## Implementation
+## Celestrium Implementation
 
 ### Plugin Architecture
 
@@ -203,7 +212,7 @@ A function such as `getAllNodes` is computationally infeasible for some datasets
 For data sets that can accomplish this, the NodeSearch plugin allows lookup of a node by name.
 For data sets that cannot accomplish this, it is left to the developer to provide some form of random access to its nodes.
 
-## Examples
+## Three Interface Implementations
 
 *It's hard to think about thinking without thinking about thinking about something.*
 
@@ -610,7 +619,7 @@ Additionally, this extra slider inspired the creation of the `Sliders` plugin, a
 Future work in this interface is to include different types of nodes, which is something that Celestrium currently doesn't prohibit, but doesn't provide express functionality for, and so perhaps a next step is to provide functionality that supports have distinct types of nodes.
 More details of the specific needs of this dataset should be investigated before deciding on the specific features this would entail.
 
-## Future Work
+## Suggested Future Work
 
 Now that we've seen what Celestrium can do, it is worth detailing it's limitations and ideas for new functionality, the subjects of the following sections.
 Future contributors to Celestrium are encouraged to address these topics.
