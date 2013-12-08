@@ -37,8 +37,31 @@ Celestrium is intended for the case where a user wants to visually analyze a gra
 
 ## Example Interface
 
-> Should concisely explain the directory structure of a simple application
-> as well as what the resulting interface looks like and how to use it
+Here is an example of an interface that was created using Celestrium, which renders a graph with nodes as the phonetic alphabet and randomly generated links between them.
+
+![image](https://f.cloud.github.com/assets/1418690/1701103/cc9a13f0-6040-11e3-815d-3be41a920182.png)
+
+You can see the graph displayed on the left and a collection of tools on the right.
+Note that this is not the entire graph.
+Celestrium allows the user to dynamically bring in parts of the entire graph.
+A user can do this by searching for a specific node and adding it using the Node Search plugin.
+Additionally, a user can pull in neighbors of nodes already in Celestrium and explore the graph by continually branching out from desired nodes.
+Celestrium also automatically includes the link between any two nodes on the graph, if it exists, keeping the visualization consistent with the full graph.
+
+The graph itself is logically composed of nodes and edges.
+Each node can have a brief text description.
+Nodes can be selected, and are shown in blue when they are.
+Links between nodes can be undirected, directed in one direction or bidirectional.
+
+Moving to the toolbar on the right, these each provide ways to manipulate or gain access about the current graph.
+The "Spacing" slider allows the nodes to be moved closer or farther apart from each other.
+The "Smooth" slider allows the granularity of the Link Strength Distribution to be adjusted.
+The "Link Strength Distribution" chart shows an approximate PDF of the link strength distributions currently present in Celestrium.
+The vertical, black bar is the minimum strength a link must have to be rendered.
+This allows a user to dynamically adjust the connectedness of the graph so it is understandable to them.
+Lastly, "Node Search" is an autocompleted text input box which allows a user to add any node they wish to Celestrium.
+
+With a basic understanding of the types of interfaces Celestrium allows to be built, we now describe how Celestrium itself is implemented.
 
 ## Implementation
 
