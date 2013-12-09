@@ -203,7 +203,7 @@ __NodeSelection__
 
 ![image](https://f.cloud.github.com/assets/774269/1708503/6d3374ae-610f-11e3-8d2a-a7e148bccb1e.png)
 
-__Sliders____
+__Sliders__
 * provides an interface to add sliders to the ui
 * function to add a new slider: `addSlider(label, initialValue, onChange)`
 
@@ -424,7 +424,7 @@ Overall, creating this interface gave us a very clear idea of what was necessary
 ### Interface 2/3 - Github Collaboration
 
 The Github dataset shows collaboration between users on Github; the higher the link strength between 2 users, the more public repos they have collaborated on together.
-First a python script was written to scrape the Github API and collect data into a JSON format.
+First a python script was written to scrape the Github API and collect data on users and their collaboratores into a JSON format.
 A GithubProvider class was then written to provide the get_nodes function required in the Node Search plugin, and the get_links and get_related_nodes functions required in the DataProvider.
 
 
@@ -513,11 +513,13 @@ The metric for 'collaboration strength' could certainly be improved on.
 Future work would also include connecting the Celestrium DataProvider endpoints to query the live Github API, not needing to download a static version of data.
 
 
-####
+#### Review
+
+
 The work to implement the functions required by Celestrium (DataProvider and NodeSearch plugins) was straightforward for this dataset.
-We created this Github dataset specifically for Celestrium, and structured it with this use in mind.
-This slightly helped the ease of implementation compared to applying Celestrium to an existing dataset.
-However, graph-like datasets in general have nodes/link equivalents as their core, and therefore can be easily made available for Celestrium.
+In scraping the Github API, we kept in mind it would be used for Celestrium, so we purposely grabbed only the neccessary data for this project.
+In the real world, a data cleaning step would most likely be needed on an existing dataset.
+Overall however, any graph-like dataset should have concepts of nodes and edges at their core, so it would be a very similar process.
 
 Customizing which plugins to use in the main script generally worked well, needing simply to add a line with the plugin's name.  However, some plugins had dependencies on others and therefore needed to be listed in certain orders (ex. GraphModel before GraphView).This requires the developer to have some understanding of how Celestrium works, or debug it if they list plugins in a wrong order.
 
