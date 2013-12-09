@@ -180,8 +180,8 @@ LinkDistribution
 * provides a variably smoothed PDF of the distribution of link strengths.
 * A slider on the PDF filters links, such that only links with weight about the threshold are visible on the graph.
 
-LinkDistributionNormailzer
-* allows transformations of all link weights to better fit the distribution
+LinkDistributionNormalizer
+* scales link weights of various distributions to the range [0,1]
 * Available transformations are linear, logarithmic (base 2 and base 10), and percentile.
 
 NodeSearch
@@ -501,11 +501,14 @@ Future work would also include connecting the Celestrium DataProvider endpoints 
 
 
 ####
-The work required to implement the functions required by Celestrium (DataProvider and NodeSearch plugins) was straightforward for this dataset, and most likely other datasets as well.  I created this dataset specifically for Celestrium, which meant structuring it for this use, as opposed to applying Celestrium to an existing dataset.  This helped my ease of implementation.  However, representations of nodes and links is a core part of graph-like datasets in Celestrium, so accessing these via Celestrium.
+The work to implement the functions required by Celestrium (DataProvider and NodeSearch plugins) was straightforward for this dataset.
+We created this Github dataset specifically for Celestrium, and structured it with this use in mind.
+This slightly helped the ease of implementation compared to applying Celestrium to an existing dataset.
+However, graph-like datasets in general have nodes/link equivalents as their core, and therefore can be easily made available for Celestrium.
 
-Customizing which plugins to use in the main script generally worked well, needing simply to add a line with the plugin's name.  However, some plugins had dependencies on others and therefore needed to be listed in certain orders (ex. GraphModel before GraphView).This requires the develpoer to have some understanding of how Celestrium works, or debug it if they list plugins in a wrong order.
+Customizing which plugins to use in the main script generally worked well, needing simply to add a line with the plugin's name.  However, some plugins had dependencies on others and therefore needed to be listed in certain orders (ex. GraphModel before GraphView).This requires the developer to have some understanding of how Celestrium works, or debug it if they list plugins in a wrong order.
 
-Overall, I found Celestrium to have a quick setup time going from having a dataset to seeing it visualized.  The plugin architecture is very good at presenting modular components for developers to understand and customize their visualization.
+Overall, I found Celestrium to have a quick setup time going from having a dataset to seeing it visualized.  The plugin architecture is very good at presenting modular components for developers to understand and then customize their visualization.
 
 ### Interface 3/3 - Semantic Networks
 
