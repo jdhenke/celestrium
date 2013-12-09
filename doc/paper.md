@@ -190,6 +190,7 @@ LinkDistributionNormalizer
 NodeSearch
 * Provides an input box to add a single node to the graph
 * developer supplies a method in the constructor to get a list of all nodes in the graph
+
 ![image](https://f.cloud.github.com/assets/774269/1708506/7735c830-610f-11e3-90ef-d501a856346a.png)
 
 NodeSelection
