@@ -151,47 +151,61 @@ Again, Celestrium is composed of many individual plugins which depend on each ot
 The default plugins included with Celestrium are described here.
 Note that an interface can choose which of these plugins to include and can also define their own plugins to be included in this infrastructure.
 
-ContextMenu
+**ContextMenu**
 * a circular popup menu (toggled by pressing ‘m’) with actions concerning selected nodes
 * developers can add new options with `addMenuOption: (menuText, itemFunction, that)`
 
-DataProvider
+![image](https://f.cloud.github.com/assets/774269/1708574/bd940a48-6110-11e3-8449-1ed4b7d2428f.png)
+
+**DataProvider**
 * abstract class that developer extends to connect Celestrium to their data set, in most cases a server
 * developers specify these two functionalities
   * `getLinks(node, nodes, callback)` which should call `callback` with an array of links between `node` and each node in `nodes` respectively.
   * `getLinkedNodes(nodes, callback)` should call `callback` with an array of nodes which are neighbors of any node in `nodes`.
 
-GraphModel
+**GraphModel**
 * Core underlying model of the graph
 * contains getter and setter methods for Nodes and Links
 
-GraphView
+**GraphView**
 * renders the graph with data from GraphModel plugin using d3 force directed layout
 * automatically re-render when GraphModel changes
 
-KeyListener
+![image](https://f.cloud.github.com/assets/774269/1708494/3e834936-610f-11e3-8f64-cb5826882932.png)
+
+**KeyListener**
 * allows plugins to listen for specific key combinations and execute code when they occur
 * built-in hotkeys include ctrl+A to select all nodes, ESC to deselect all nodes, 'm' to toggle the ContextMenu
 
-Layout
+**Layout**
 * Manages overall UI layout of page
 * provides functions to add DOM elements to containers in parts of the screen
 
-LinkDistribution
+**LinkDistribution**
 * provides a variably smoothed PDF of the distribution of link strengths.
 * A slider on the PDF filters links, such that only links with weight about the threshold are visible on the graph.
 
-NodeSearch
+**LinkDistributionNormalizer**
+* scales link weights of various distributions to the range [0,1]
+* Available transformations are linear, logarithmic (base 2 and base 10), and percentile.
+
+**NodeSearch**
 * Provides an input box to add a single node to the graph
 * developer supplies a method in the constructor to get a list of all nodes in the graph
 
-NodeSelection
+![image](https://f.cloud.github.com/assets/774269/1708506/7735c830-610f-11e3-90ef-d501a856346a.png)
+
+**NodeSelection**
 * allows nodes to be selected or unselected
 * provides functions to access the state of the selected nodes
 
-Sliders
+![image](https://f.cloud.github.com/assets/774269/1708503/6d3374ae-610f-11e3-8d2a-a7e148bccb1e.png)
+
+**Sliders**
 * provides an interface to add sliders to the ui
 * function to add a new slider: `addSlider(label, initialValue, onChange)`
+
+![image](https://f.cloud.github.com/assets/774269/1708499/5fe59cbe-610f-11e3-9bf6-040af4abcf4e.png)
 
 Now that all the plugins have been listed, two plugins are next discussed in more detail: GraphModel and DataProvider.
 
@@ -267,7 +281,7 @@ Overall, creating this interface gave us a very clear idea of what was necessary
 
 The Github dataset shows collaboration between users on Github; the higher the link strength between 2 users, the more public repos they have collaborated on together.
 First a python script was written to scrape the Github API and collect data into a JSON format.
-It was found to be straightforward to implement the GithubProvider class (code below) to connect this data to Celestrium, especially with the example implementations serving as guidance.
+A GithubProvider class was then written to provide the `get_nodes` function required in the Node Search plugin, and the `get_links` and `get_related_nodes` functions required in the DataProvider.
 
 ![image](https://f.cloud.github.com/assets/774269/1699263/f6d3cd38-5f8b-11e3-990c-15a56594ea29.png)
 
@@ -281,6 +295,17 @@ In addition, the measure of link strength is arbitrary; I used the number of rep
 The metric for 'collaboration strength' could certainly be improved on.
 
 Future work would also include connecting the Celestrium DataProvider endpoints to query the live Github API, not needing to download a static version of data.
+
+#### Celestrium Review
+
+The work to implement the functions required by Celestrium (DataProvider and NodeSearch plugins) was straightforward for this dataset.
+In scraping the Github API, we kept in mind it would be used for Celestrium, so we purposely grabbed only the neccessary data for this project.
+In the real world, a data cleaning step would most likely be needed on an existing dataset.
+Overall however, any graph-like dataset should have concepts of nodes and edges at their core, so it would be a very similar process.
+
+Customizing which plugins to use in the main script generally worked well, needing simply to add a line with the plugin's name.  However, some plugins had dependencies on others and therefore needed to be listed in certain orders (ex. GraphModel before GraphView). This requires the developer to have some understanding of how Celestrium works, or debug it if they list plugins in a wrong order.
+
+Overall, I found Celestrium to have a quick setup time going from having a dataset to seeing it visualized.  The plugin architecture is very good at presenting modular components for developers to understand and then customize their visualization.
 
 ### Interface 3/3 - Semantic Networks
 
