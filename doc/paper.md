@@ -150,7 +150,7 @@ Again, Celestrium is composed of many individual plugins which depend on each ot
 The default plugins included with Celestrium are described here.
 Note that an interface can choose which of these plugins to include and can also define their own plugins to be included in this infrastructure.
 
-ContextMenu
+__ContextMenu__
 * a circular popup menu (toggled by pressing ‘m’) with actions concerning selected nodes
 * developers can add new options with `addMenuOption: (menuText, itemFunction, that)`
 
@@ -199,6 +199,7 @@ NodeSearch
 NodeSelection
 * allows nodes to be selected or unselected
 * provides functions to access the state of the selected nodes
+
 
 ![image](https://f.cloud.github.com/assets/774269/1708503/6d3374ae-610f-11e3-8d2a-a7e148bccb1e.png)
 
