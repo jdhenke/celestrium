@@ -153,6 +153,7 @@ Note that an interface can choose which of these plugins to include and can also
 ContextMenu
 * a circular popup menu (toggled by pressing ‘m’) with actions concerning selected nodes
 * developers can add new options with `addMenuOption: (menuText, itemFunction, that)`
+![image](https://f.cloud.github.com/assets/774269/1708574/bd940a48-6110-11e3-8449-1ed4b7d2428f.png)
 
 DataProvider
 * abstract class that developer extends to connect Celestrium to their data set, in most cases a server
@@ -167,6 +168,7 @@ GraphModel
 GraphView
 * renders graph with data from GraphModel plugin using d3 libraries
 * provides update function to re-render the graph when GraphModel changes
+![image](https://f.cloud.github.com/assets/774269/1708494/3e834936-610f-11e3-8f64-cb5826882932.png)
 
 KeyListener
 * allows hotkeys to fire events from any plugin
@@ -179,6 +181,7 @@ Layout
 LinkDistribution
 * provides a variably smoothed PDF of the distribution of link strengths.
 * A slider on the PDF filters links, such that only links with weight about the threshold are visible on the graph.
+![image](https://f.cloud.github.com/assets/774269/1708495/451b8efc-610f-11e3-9b2f-e347702a1d9f.png)
 
 LinkDistributionNormalizer
 * scales link weights of various distributions to the range [0,1]
@@ -187,14 +190,17 @@ LinkDistributionNormalizer
 NodeSearch
 * Provides an input box to add a single node to the graph
 * developer supplies a method in the constructor to get a list of all nodes in the graph
+![image](https://f.cloud.github.com/assets/774269/1708506/7735c830-610f-11e3-90ef-d501a856346a.png)
 
 NodeSelection
 * allows nodes to be selected or unselected
 * provides functions to access the state of the selected nodes
+![image](https://f.cloud.github.com/assets/774269/1708503/6d3374ae-610f-11e3-8d2a-a7e148bccb1e.png)
 
 Sliders
 * provides an interface to add sliders to the ui
 * function to add a new slider: `addSlider(label, initialValue, onChange)`
+![image](https://f.cloud.github.com/assets/774269/1708499/5fe59cbe-610f-11e3-9bf6-040af4abcf4e.png)
 
 Now that all the plugins have been listed, two plugins are next discussed in more detail: GraphModel and DataProvider.
 
