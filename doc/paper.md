@@ -156,54 +156,54 @@ __ContextMenu__
 
 ![image](https://f.cloud.github.com/assets/774269/1708574/bd940a48-6110-11e3-8449-1ed4b7d2428f.png)
 
-DataProvider
+__DataProvider__
 * abstract class that developer extends to connect Celestrium to their data set, in most cases a server
 * developers specify these two functionalities
   * `getLinks(node, nodes, callback)` which should call `callback` with an array of links between `node` and each node in `nodes` respectively.
   * `getLinkedNodes(nodes, callback)` should call `callback` with an array of nodes which are neighbors of any node in `nodes`.
 
-GraphModel
+__GraphModel__
 * Core underlying model of the graph
 * contains getter and setter methods for Nodes and Links
 
-GraphView
+__GraphView__
 * renders graph with data from GraphModel plugin using d3 libraries
 * provides update function to re-render the graph when GraphModel changes
 
 ![image](https://f.cloud.github.com/assets/774269/1708494/3e834936-610f-11e3-8f64-cb5826882932.png)
 
-KeyListener
+__KeyListener__
 * allows hotkeys to fire events from any plugin
 * built-in hotkeys include ctrl+A to select all nodes, ESC to deselect all nodes, 'm' to toggle the ContextMenu
 
-Layout
+__Layout__
 * Manages overall UI layout of page
 * provides functions to add DOM elements to containers in parts of the screen
 
-LinkDistribution
+__LinkDistribution__
 
 * provides a variably smoothed PDF of the distribution of link strengths.
 * A slider on the PDF filters links, such that only links with weight about the threshold are visible on the graph.
 
 
-LinkDistributionNormalizer
+__LinkDistributionNormalizer__
 * scales link weights of various distributions to the range [0,1]
 * Available transformations are linear, logarithmic (base 2 and base 10), and percentile.
 
-NodeSearch
+__NodeSearch__
 * Provides an input box to add a single node to the graph
 * developer supplies a method in the constructor to get a list of all nodes in the graph
 
 ![image](https://f.cloud.github.com/assets/774269/1708506/7735c830-610f-11e3-90ef-d501a856346a.png)
 
-NodeSelection
+__NodeSelection__
 * allows nodes to be selected or unselected
 * provides functions to access the state of the selected nodes
 
 
 ![image](https://f.cloud.github.com/assets/774269/1708503/6d3374ae-610f-11e3-8d2a-a7e148bccb1e.png)
 
-Sliders
+__Sliders____
 * provides an interface to add sliders to the ui
 * function to add a new slider: `addSlider(label, initialValue, onChange)`
 
