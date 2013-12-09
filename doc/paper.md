@@ -314,6 +314,10 @@ And that's it! The resulting interface can be seen in the Example Interface sect
 
 ### Interface 1/3 - Emails
 
+The first data set that we built an interface for using Celestrium was an email dataset. This takes raw email data in json format and represents email users and lists as nodes, and flow of email as directed edges. The thicker an edge is, the more heavy the flow of emails between the two users is. An edge has a single direction if all the emails between two nodes are in one direction. An edge is bidirectional if there has been email communication in both directions between the two nodes.
+
+This analysis brought about some interesting results. There are many email lists that are always only on the receiving end of emails (such as `vball`) - being able to visually analyze the dataset made this fact very obvious. Also, using the Celestrium link strength chooser allowed us to see which relationships were more email-heavy than others.
+
 ![image](https://f.cloud.github.com/assets/1238874/1699336/b163b194-5f92-11e3-9e97-023cd398f5c3.png)
 
 ### `main.coffee`
@@ -385,18 +389,24 @@ define ["DataProvider"], (DataProvider) ->
       @ajax "get_related_nodes", data, callback
 ```
 
-The most unique thing about the emails dataset is that emails have directions. For this reason, we developed Celestrium to support directed edges.
+<!-- The most unique thing about the emails dataset is that emails have directions. For this reason, we developed Celestrium to support directed edges.
 We can see that between many pairs of users, the communication is one-sided many times.
 Celestrium supports directed edges, so it is very simple for a developer to provide 'directed-ness' in their graphs.
 
-In implementing this, first a python script was written to clean raw data into json for the server to read. The server then digests all the emails and organizes them into a hashtable for easy access.
+In implementing this, first a python script was written to clean raw data into json for the server to read. The server then digests all the emails and organizes them into a hashtable for easy access. -->
 
-### Future Work
+#### Review of Celstrium
 
-Currently, this proof-of-concept is static, but in the future, it would be neat to see it grow and change dynamically.
-There is more work to be done on the back end in terms of speed.
-When adding nodes to the graph, it is very easy to have sudden large increases in data when we land on a user that has a high email frequency.
-At these times, Celestrium can be seen to be slightly laggy.
+
+In building this emails visualization, it was apparent how easy Celestrium made it to build a frontend from raw json data. The ease in defining link strengths also made it very flexible for us to try different ways to represent links, to see which led to the most effective visualization.
+
+One of the key features that came out of this dataset was the directed edges property. Since a prominent property of an email is the direction of the email (who sends it and who receives it), it is natural to want to show that directedness in the visualization. From this need, we allowed edges to have a direction property from the following possiblities: `{bidirectional, forward, backward}`.
+
+As we were developing this interface, we started realizing how cluttered the UI was. We added more and more plugins, which placed more and more boxes on the screen in various corners. We also realized that there were some plugins, such as the Dimensionality Slider that were not necessary to the emails dataset. To counter this issue, we built a plugins container that made it very customizable and easy for the developer to dictate which plugins would be included, and even what order they would be. We also allowed the plugins to be collapsed so the user could focus solely on the graph at hand.
+
+Currently, this dataset comes from raw static json data. It would be neat if Celestrium could handle changes in the server dynamically, and the backend was hooked up to a real email inbox. The existing implementation only shows an update to the graph if the user makes another request that includes the update. Future work in this would perhaps involve considering long-polling or sockets to show updates from the backend, live. This and other dynamically changing datasets would be expressed much more gracefully if that were the case.
+
+Overall, creating this interface gave us a very clear idea of what was necessary to make this a strong, flexible, and usable library for all kinds of graphs - it also gave us an idea of what our next steps are to make Celestrium even more versatile.
 
 ### Interface 2/3 - Github Collaboration
 
