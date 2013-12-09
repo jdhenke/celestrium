@@ -12,10 +12,11 @@ Professor Madden
 Celestrium is a collection of requirejs modules which enables developers to easily create interfaces to visualize and explore large graph based datasets.
 It is designed to be database agnostic and minimize the activation energy required by developers.
 It easily interfaces with JSON server endpoints to populate the visualization.
-This paper presents an example visualization of a random graph created by using celestrium.
-It then discusses how and why Celestrium's plugin architecture was designed the way it is and argues it could be useful in other contexts.
+This paper presents an example visualization of a random graph created by using Celestrium.
+It then discusses how and why Celestrium's plugin architecture was designed the way it was and argues it could be useful in other contexts.
 Additionally, Celestrium was purposefully developed to support three different data sets in an effort to keep its use cases general as well as inspire a diverse set of functionalities.
 Celestrium's effectiveness is evaluated through qualitative descriptions of these interface's implementations and is found to be general and powerful enough to support all of them.
+The code for the central part of the implementation for each data set is provided in the appendix.
 Many ideas are presented as possibilities for future work.
 This includes a quantative analysis of the scalability of the visualization itself, which found Celestrium to be very responsive for reasonably sized data sets which humans could understand but also established its limitations, which could be improved in the future.
 
@@ -24,9 +25,10 @@ This includes a quantative analysis of the scalability of the visualization itse
 * Introduction
 * Example Interface
 * Celestrium Implementation
-* Three Interface Implementations
+* Three Interface Case Studies
 * Suggested Future Work
 * Conclusion
+* Appendix
 
 ## Introduction
 
@@ -40,11 +42,7 @@ In Celestrium, nodes can be clicked, selected and dragged, continuously altering
 
 [**Javascript InfoVis Toolkit**](http://philogb.github.io/jit/index.html) and [**VivaGraphJS**](https://github.com/anvaka/VivaGraphJS) are more dynamic and can detect user interaction with nodes, for example.
 However, they are only responsible for rendering the graph's layout.
-Ultimately, what separates Celestrium from VivaGraphJS and all other libraries is it has extra plug-and-play features builtin such as:
-
-* Being able to manipulate and view the distributions of link strengths
-* Running graph analysis algorithms on the visible subgraph
-* Providing an API to easily communicate with JSON server endpoints
+Ultimately, what separates Celestrium from all other libraries is it has extra plug-and-play features builtin such as being able to manipulate and view the distributions of link strengths providing an API to easily communicate with JSON server endpoints to populate the visualization.
 
 In a sense, Celestrium takes graph visualization platforms further by providing default, but replaceable, implementations of common functionalities to make creating graph visualizations easier.
 Celestrium is intended for the case where a user wants to visually analyze a graph database which is too big to understand all at once and so must be investigated from a particular node or nodes outwards, bottom up.
@@ -58,13 +56,13 @@ Here is an example of an interface that was created using Celestrium, which rend
 First, note that this is not the entire graph.
 Celestrium allows the user to dynamically bring in parts of the entire graph.
 A user can do this by searching for a specific node and adding it using the Node Search plugin.
-Additionally, a user can pull in neighbors of nodes already in Celestrium and explore the graph by continually branching out from desired nodes.
+Additionally, a user can pull in neighbors of nodes already in Celestrium and explore the graph by continually branching out from chosen nodes.
 Celestrium also automatically includes the links between the nodes currently on the graph, keeping the visualized graph consistent with the entire graph.
 
 The graph itself is logically composed of nodes and edges.
 Each node can have a brief text description.
 Nodes can be selected and are shown in blue when they are.
-Links between nodes can be undirected, directed in one direction or bidirectional.
+Links between nodes can be undirected, directed or bidirectional.
 
 Moving to the toolbar on the right, these each provide ways to manipulate or gain access to information about the current graph.
 The "Spacing" slider allows the nodes to be moved closer or farther apart from each other.
@@ -74,7 +72,7 @@ The vertical, black bar is the minimum strength a link must have to be rendered.
 This allows a user to dynamically adjust the connectedness of the graph so it is understandable to them.
 Lastly, "Node Search" is an autocompleted text input box which allows a user to add any node they wish to Celestrium.
 
-There are more plugins not included in this example and are described in the next section.
+There are more plugins not included in this example but they are described in the next section.
 
 With a basic understanding of the types of interfaces Celestrium allows to be built, we now describe how Celestrium itself is implemented.
 
@@ -92,9 +90,9 @@ The difference may or may not be obvious, but it is important in understanding C
 
 To make this concrete, consider three plugins which interact with eachother.
 
-* GraphView is responsible for rendering the graph on the screen and listens for changes to the GraphModel
 * GraphModel contains the underlying node and link objects which describe the currently visualize graph
-* DataProvider listens to the GraphView for certain user actions and when fired, contacts the server and updates the GraphModel with new nodes or links
+* GraphView is responsible for rendering the graph on the screen and listens for changes to the GraphModel
+* DataProvider listens to the GraphView for certain user actions and when fired, contacts the server and updates the GraphModel with new nodes or links with the server's response
 
 The *definition* of GraphModel is the class definition in Coffeescript, but an *instance* is a GraphModel object.
 This may seem trivial, but requirejs only provides the definitions, not the instances, which is an issue because plugins almost always need access to the instance of another plugin and more specifically, they need access to the *same* instance.
@@ -109,7 +107,10 @@ Celestrium addresses these needs by separating the entry of parameters and insta
 * A plugin's **constructor** accepts arguments from the developer.
 * A plugin's **init** function accepts a dictionary of instances of other plugins.
 
-The code which facilitates this is actually very concise and is shown here. This is out of a special module called `Celestrium`, which has one function, `init`:
+The code which facilitates this is actually very concise and is shown here. This is out of a special module called `Celestrium`, which has one function, `init`.
+Celestrium's `init` function has a different meaning than other plugins' init functions, and was probably a pour naming decision in retrospect.
+The Celestrium module is different because it defines the plugin architecture which the other plugins adhere to and is responsible for bootstrapping the process of instantiating all the other plugins.
+Here is the code it uses to do so:
 
 ```coffeescript
 init: (pluginsDict, callback) ->
@@ -133,7 +134,7 @@ So iterating through `pluginsDict`, a list of plugin instances, `instances`, is 
 * added to `instances` itself, so later plugins may access it.
 
 An issue here is that no circular dependencies may exist.
-It is unclear if maintaining this invariant is good design regardless or a limitation of this approach.
+It is unclear if maintaining this invariant is good design in general or a limitation of this approach.
 
 An alternative could be to perform two passes.
 On the first, each plugin is created and added to the `instances` dictionary.
@@ -165,11 +166,11 @@ GraphModel
 * contains getter and setter methods for Nodes and Links
 
 GraphView
-* renders graph with data from GraphModel plugin using d3 libraries
-* provides update function to re-render the graph when GraphModel changes
+* renders the graph with data from GraphModel plugin using d3 force directed layout
+* automatically re-render when GraphModel changes
 
 KeyListener
-* allows hotkeys to fire events from any plugin
+* allows plugins to listen for specific key combinations and execute code when they occur
 * built-in hotkeys include ctrl+A to select all nodes, ESC to deselect all nodes, 'm' to toggle the ContextMenu
 
 Layout
@@ -227,14 +228,264 @@ A function such as `getAllNodes` is computationally infeasible for some datasets
 For data sets that can accomplish this, the NodeSearch plugin allows lookup of a node by name.
 For data sets that cannot accomplish this, it is left to the developer to provide some form of random access to its nodes.
 
-## Three Interface Implementations
+## Three Interface Case Studies
 
-This section provides concrete examples of interfaces using Celestrium.
-The first is an interface which has no backend - it simply produces random links between nodes named after the Phonetic Alphabet.
-This random interface is then used as a baseline in comparison to implementations of three real data sets.
-Because some data sets generate their graphs differently i.e. sparse matrices vs. redirecting to a REST API vs. static data, only the main script and data provider scripts are compared, however other scripts which were necessary for each interface to function are described in each section for reference.
+This section provides concrete examples of interfaces which were implemented using Celestrium.
+One for each of three different, real data sets.
+We use these three implementation as case studies to qualitatively judge Celestriums' effectiveness from a developer's perspective.
 
-### Baseline - Random
+The actual code to implement these interfaces can be found in the appendix.
+
+### Interface 1/3 - Emails
+
+The first data set that we built an interface for using Celestrium was an email dataset.
+This takes raw email data in json format and represents email users and lists as nodes, and flow of email as directed edges.
+The thicker an edge is, the heavier the flow of emails between the two users is.
+An edge has a single direction if all the emails between two nodes are in one direction.
+An edge is bidirectional if there has been email communication in both directions between the two nodes.
+
+This analysis brought about some interesting results.
+There are many email lists that are always only on the receiving end of emails (such as `vball`) - being able to visually analyze the dataset made this fact very obvious.
+Also, using the Celestrium link strength filter allowed us to see which relationships were more email-heavy than others.
+
+![image](https://f.cloud.github.com/assets/1238874/1699336/b163b194-5f92-11e3-9e97-023cd398f5c3.png)
+
+#### Review of Celstrium
+
+In building this emails visualization, it was apparent how easy Celestrium made it to build a frontend from raw json data.
+The ease in defining link strengths also made it very flexible for us to try different ways to represent links, to see which led to the most effective visualization.
+
+One of the key features that came out of this dataset was the directed edges property. Since a prominent property of an email is the direction of the email (who sends it and who receives it), it is natural to want to show that directedness in the visualization. From this need, we allowed edges to have a direction property from the following possiblities: `{bidirectional, forward, backward}`.
+
+As we were developing this interface, we started realizing how cluttered the UI was. We added more and more plugins, which placed more and more boxes on the screen in various corners. We also realized that there were some plugins that were not necessary for the emails dataset. To counter this issue, we built a plugins container that made it easy for the developer to dictate which plugins would be included, and even in what order they would be. We also allowed the plugins to be collapsed so the user could focus solely on the graph at hand.
+
+Currently, this dataset comes from raw static json data. It would be neat if Celestrium could handle changes in the server dynamically, and the backend was connected to a real email inbox. The existing implementation only shows an update to the graph if the user makes another request that includes the update. Future work in this would perhaps involve considering long-polling or sockets to show updates from the backend, live. This and other dynamically changing datasets would be expressed much more gracefully if that were the case.
+
+Overall, creating this interface gave us a very clear idea of what was necessary to make this a strong, flexible, and usable library for all kinds of graphs - it also gave us an idea of what our next steps are to make Celestrium even more versatile.
+
+### Interface 2/3 - Github Collaboration
+
+The Github dataset shows collaboration between users on Github; the higher the link strength between 2 users, the more public repos they have collaborated on together.
+First a python script was written to scrape the Github API and collect data into a JSON format.
+It was found to be straightforward to implement the GithubProvider class (code below) to connect this data to Celestrium, especially with the example implementations serving as guidance.
+
+![image](https://f.cloud.github.com/assets/774269/1699263/f6d3cd38-5f8b-11e3-990c-15a56594ea29.png)
+
+Looking at the distribution of collaborations, there were many relationships with few repos collaborated on, with some outliers of a very high number of repos collaborated on.
+This distribution inspired a LinkDistributionNormalizer plugin, where link strengths could be transformed linearly, logarithmically, or into percentiles to best fit the distribution of the data.
+
+#### Future Work
+
+The goal of this dataset is to show collaboration relationships on Github.  However, only publicly available data could be used, which restricts this to public repos.
+In addition, the measure of link strength is arbitrary; I used the number of repos they collaborated on.  But should collaboration on a project with a few other people be counted the same as collaboration on a project with hundreds of other users?
+The metric for 'collaboration strength' could certainly be improved on.
+
+Future work would also include connecting the Celestrium DataProvider endpoints to query the live Github API, not needing to download a static version of data.
+
+### Interface 3/3 - Semantic Networks
+
+The third interface we built using Celestrium was for a semantic network.
+Nodes represented every day concepts and the links showed closely they were inferred to be semantically related which can be thought of as an estimate made by the algorithm of how closely related a person would say two concepts are.
+
+![image](https://f.cloud.github.com/assets/1418690/1689464/df3411e8-5e22-11e3-8477-683173eb9d24.png)
+
+More precisely, this is actually showing the results of performing **inference** over a semantic network.
+What this boils down to in the user interface is that the strength of each link is a polynomial in a variable, the "Dimensionality", which the user can adjust in the interface using a slider.
+
+This leads to a very different implementation for defining a link's strength.
+On the server, the polynomial is constructed for each link rather than a single value.
+Then, the coefficients are sent to this interface's extension of `DataProvider`, which defines the link's strength by reconstructing the polynomial from the coefficients, retreiving the current value of the Dimensionality from the slider, then finally evaluating the polynomial at the given value of the Dimensionaity.
+Additionally, the strength of each link is redefined and re-rendered every time the Dimensionality's slider is adjusted, creating a very easy to use and powerful tool in the interface.
+
+#### Review of Celestrium
+
+First, this interface prompted the design of the `linkFilter` feature in DataProvider, allowing the strength of the link to be defined with respect to the current state of the client interface, not just on the server.
+Additionally, this "Dimensionality" slider inspired the creation of the `Sliders` plugin, and allows this "Dimensionality Slider" to integrate seemlessly into the UI next to the other sliders.
+
+Another critical part of this interface is that adjusting the "Dimensionality Slider" updates the graph in real time.
+This was made by possible and actually straightforward through Celestrium's design.
+GraphView listens for changes to GraphModel and automatically updates itself.
+So all that was needed was to modify the underlying GraphModel and the interface updated itself without any extra effort specific to this implementation.
+
+Future work in this interface would be to include different types of nodes, which is something that Celestrium currently doesn't prohibit, but for which it does not provide express functionality.
+Different types of nodes are needed because in semantic networks there are also "Assertions", which are (concept, relation, concept) triplets, so including both concepts and assertions on the same graph as different node types could improve the interface.
+So, perhaps a next step is to provide functionality that supports having distinct types of nodes.
+
+In summary, creating this interface definitely helped evolve several features of Celestrium and validated several aspects of its design as well.
+Ultimately, it was found to be found to be very easy to establish the frontend for this data set, which is the primary goal of Celestrium.
+
+## Suggested Future Work
+
+Now that we've seen what Celestrium can do, it is worth detailing it's limitations and ideas for new functionality, the subjects of the following sections.
+Future contributors to Celestrium are encouraged to address these topics.
+
+###  Current Limitations
+
+Celestrium's design and implementation are certainly not without fault.
+Because Celestrium's efficacy is based on how easy it is for developers to use, issues of various scopes come into play.
+In an effort to explain the full spectrum, we now detail these issues progressing from the purely logistical to the more technical.
+
+#### Infrastructure
+
+While not as intellectually stimulating as other problems, Celestrium's infrastructure could perhaps be improved in the following ways.
+
+Firstly, Celestrium is written primarily in Coffeescript, which compiles to Javascript.
+Because of this, any developer using Celestrium must bring the tools to do this compilation into their project when they might not necessarily want or be able to.
+Looking into using requirejs's optimization tool on the compiled output, Celestrium could potentially release a minified, single javascript file, making it much easier to simply put in a project.
+
+Additionally, Celestrium uses Less, which compiles to CSS. Currently, Celestrium avoids the need to compile its Less files but at the cost of users of Celestrium needing to load the Less compiler onto any webpage using Celestrium.
+A similar, compiled version of the CSS should be made available for Celestrium as well.
+
+#### Code Organization
+
+Moving into how Celestrium organizes its modules, several things could be improved.
+
+As mentinoed previously, circular dependencies amongst plugins are not allowed.
+The only drawback as it stands is that plugins must be specified according the their partial ordering of depedencies in calling `Celestrium.init`.
+It remains to be seen if there is a good use case which would not be possible using this or if there is a complete argument against circular dependencies.
+Either allowing circular dependencies or providing a more thorough argument against them would at least clarify the appropriateness of this decision.
+
+Additionally, the Layout plugin, while convenenient, is not as configurable as it could perhaps be.
+While this isn't problematic in isolation, it is problematic in that many of the other plugins rely on using Layout, because not wanting to use Layout then implies one cannot use any plugins which depends on it.
+Making Layout more configurable and/or removing other plugins' dependencies on it would certainly make Celestrium more modular.
+
+#### Scalability
+
+How large of a graph can interfaces created by Celestrium handle?
+This question is open to interpretation, so first some framing is in order.
+
+Firstly, we consider the scalability of the backend database a separate issue.
+Celestrium is an entirely frontend library, so the specifics of the database performance certainly affect its use in practice, but it is not fundamentally part of Celestrium and so is not a good metric by which to judge Celestrium's performance.
+
+Therefore, we will focus on the performance of the frontend.
+This was done by measuring certain metrics for rendering different numbers of nodes and links, all populated entirely within the frontend.
+Tests were performed on a 15" MacBook Pro with Retina Display, 2.6 GHz Intel Core i7 with 8 GB 1600 MHz DDR3 RAM using Google Chrome 31.0.1650.57.
+Specifically, nine different tests were conducted where the number of nodes and links were from {1000, 2500, 5000}.
+Then the following metrics were evaluated and tabulated.
+
+* **Memory Usage** - The amount of memory used by the tab in Chrome
+* **Time to Populate the Graph** - The amount of time it took to add the specified number of nodes and links to the graph.
+* **Responsiveness of the Visualization** - Once the graph was completely populated, d3's force directed layouts iterates and on each **tick** the graph updates the location of the nodes and links. To measure the responsiveness, the amount of time between ticks for the first ten seconds of the rendering was averaged.
+
+Before going into the details of the results, it is worth noting that while the interface can handle these sizes of graphs, it is not a typical use case.
+The purpose of these interfaces is for a human to explore these graphs and a human would have a hard time understanding a graph of even 1000 nodes and links.
+Testing on a more reasonable scale i.e. 100 nodes and 1000 links yielded very good performance.
+We found ~24 ms/tick which equates to ~40 updates per second, which is high enough to produce very fluid rendering of the graph to the user.
+The memory usage was negligble and it took less than one second to populate the graph.
+In summary, at scales a human could understand, Celestrium has been found to perform very well.
+
+The purpose of explaining the following metrics, then, is to understand the limits of Celestrium's interface, human capabilities aside.
+These limitations are worth nothing and improving because they could help improve performance on slower machines which may have trouble even on more reasonably sized graphs.
+Additionally, it is impossible to rule out a use case where these sized graphs are actually necessary to render.
+With that in mind, let's start with the memory used in each test case.
+
+##### Memory Usage
+
+The amount of memory used by the tab in chrome according to Chrome's Task Manager was recorded and the following results were found.
+
+![image](https://f.cloud.github.com/assets/1418690/1689050/6139b0ec-5e16-11e3-9221-b234726e33f4.png)
+
+To summarize, the amount of memory certainly scales with both links and nodes, but it seems to grow much more with the number of nodes.
+The absolute scale of these numbers is well within the acceptable range of memory usage.
+For reference, a tab with Gmail open was using 170 MB, putting the highest memory used by Celestrium at less than 65% of Gmail.
+
+##### Time to Populate the Graph
+
+Taking the time to simply populate the graph seemed to result in more dubious results for Celestrium.
+
+To explain the following three charts, the first shows just the time it took to add the nodes to the graph for each test.
+The second shows just the time it took to add the links to the graph.
+The third then shows the total time, which is the sum of the first two.
+
+![image](https://f.cloud.github.com/assets/1418690/1689134/a544cf72-5e18-11e3-987e-a1910a7a5836.png)
+
+A few things are notable here.
+
+The first is the general range of the results. The fastest test took approximately 6 seconds while the slowest took 4 **minutes**.
+
+The second is that the time to add a certain number of nodes was irrespective of the number of links, while the opposite is not true and the reason for this is perhaps somewhat subtle - the nodes were always added first.
+Link objects must reference the actual node objects they are linking, so the nodes must be created first.
+The number of links added will never affect the time to load the nodes because it occurs after the noads are loaded.
+However, it is somewhat unclear why the number of nodes affects the time to add a link.
+We hypothesize that this is due to the overlap in the process of adding the links and the events still being fired from adding the nodes.
+
+And lastly, the performance in loading the graph seems to follow the results of memory usage in that the number of nodes seems to have a greater impact on the time than the number of links.
+
+How could this be improved?
+Perhaps the fundamental issue is that nodes and links must be added individually rather than all at once.
+This design choice was made to more easily communicate with the backend about updating the state of the graph.
+In particular, when adding a node to the graph, the only links that must be fetched to keep the grpah current are between that node and all the nodes currently present.
+If more than one node is added at a time, the links between each pair of nodes within that new group must now also be considered, greatly increasing the complexity the developer must deal with.
+However, if high performance for larger graphs and/or slower machines is required, we feel this is the largest bottleneck.
+
+##### Visualization Responsiveness
+
+The last metric to consider is how quickly the force directed layout updates itself.
+
+It is worth mentioning the algorithm that d3 implements is the [Barnes-Hut approximation](http://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation) which provides an asymptotic runtime of `O(n*log(n))` for `n` nodes, as opposed to a naive implementation's `O(n^2))`.
+
+Additionally, the rendering speed is improved if the visualization is zoomed out and worsened when zoomed in.
+For these tests, the default zoom level was used for uniformity.
+
+The following metrics were found by, once the graph was completely loaded, averaging the time between updates of the layout for the first ten seconds of the simulation.
+Here is what was found:
+
+![image](https://f.cloud.github.com/assets/1418690/1689232/a233a468-5e1b-11e3-9801-196c8c156c91.png)
+
+First, it seems there is a fair amount of variability, as the results go from 1785 ms for 2500 nodes and links to 841 ms when the number of links *increases* to 5000.
+A possible reason for this is that, due to the large number of nodes, some nodes were not always visible on the screen, perhaps reducing the browser's rendering computation.
+Perhaps in the case with 2500 nodes and 5000 links, more nodes than usual were not visible, speeding up the runtime of those iterations.
+
+To explain the >10000 entry, using 5000 nodes and links resulted in the layout never completing it's second iteration in the first ten seconds.
+
+In summary, it seems Celestrium's interface can definitely become unusable when scaled up these sized graphs.
+To overcome this, one could leverage the effects of zooming and when slow layout iterations are detected, zoom out.
+Additionally, a force directed layout aproach may fundamentally not be feasable at this scale, so a one time static layout algorithm may be necessary.
+Or, one could run the layout internally without updating the UI, then simply render the final result of the layout process at the end.
+Again, because humans most likely would not be able to make sense of so much data, making this interface usable at this scale may not be a priority, but we suggest at least detecting when the layout iterations become slow and handling it accordingly so the user is not left simply staring at a faltering visualization.
+
+### General Future Work
+
+For the future, there are many features we'd like to add.
+
+* **Minimap** when a user explores a very large dataset, it is sometimes easy to get lost in the low-level details. We'd like to provide a minimap so users can always have a sense of the entire graph.
+
+* **Clustering** Celestrium currently uses D3's force-directed layout. It would be nice to be able to define some clustering/grouping of nodes, perhaps through positioning or drawing a shape around the group.
+
+* **Alternate Layouts** In addition to clustering, there are many other layouts that we could potentially use. (Grid, linear, hierarchical, etc)
+
+* **Dynamically update graph** Currently, updates from the server only show when we make another request. If we could use some polling functionality, or perhaps sockets, we could dynamically show changes from the server.
+
+* **Interactive tutorial** Since Celestrium provides a lot of plugins and features, it would be nice if we could provide an interactive tutorial for the user to get started using Celestrium to analyze datasets. There are many libraries available to do this, such as [`intro.js`](http://usablica.github.io/intro.js/).
+
+* **Serialization and caching** On every addition to the graph, we make a request to the server. In efforts to optimize performance, we could use Javascript's `localStorage` or `sessionStorage` to make this happen.
+
+* **Custom mapping to visual dimensions** When nodes or edges have continuous values, we want to allow the user to specify how that should be represented. Currently, we use histograms to bin link strengths. However, it could be possible that the developer can define their own views to display values and attributes of the nodes and links.
+
+* **Graph analysis** Since we have such a well formed graph, it seems natural to be able to perform graph analysis on our data. It would be useful to have plugins for different analyses such as PageRank, shortest path, and different search algorithms.
+
+* **Writeable Graph** Currently, our implementation is read-only. A huge feature would be to allow users to edit the graph. This would be a huge task to undertake, but would be great for users that see the need to build graphs interactively.
+
+* **Unit Testing and Continuous Integration** We'd like to make it easy to test our separate plugins. It'd be nice to have a testing framework so that when we develop for Celestrium and contribute through pull requests, we can ensure their robustness through automatic unit tests.
+
+* **Semantic Versioning** In addition to unit testing and continuous integration, we'd like to make Celestrium easy to develop from by declaring v1.0.0 pursuant to [semantic versioning](http://semver.org/).
+
+## Conclusion
+
+Celestrium was created out of the desire to reduce the activation energy in creating graph visualization and exploration tools for a variety of different data sets.
+To that end, we created a custom plugin architecture and plugins to allow interfaces to be created with only the desired components.
+In using Celestrium for different data sets, it was found that it was general enough to handle each of them and provide meaningful interfaces.
+However, their definitely remain opportunities for future work to improve Celestrium, ranging from logistical improvements to more technical subjects.
+Ultimately, we feel we have created a very practical tool that can be immediately put to use.
+
+## Appendix
+
+This appendix includes the core parts of several different implementations using Celestrium.
+The first is for an interface to explore a randomly generated graph.
+We felt this was a very simple implementation as it doesn't require a backend and should be considered a lower bound on the cost of implementation for comparison against the following interfaces.
+The three following interfaces as the three case studies as described in the Three Interface Case Study section.
+
+### Random Graph Interface Code
 
 This example shows the necessary code to create the functionality for a random graph generator.
 This implementation is also more thoroughly explained to illustrate the general structure of an implementation.
@@ -306,17 +557,10 @@ It's directionality is also random.
 
 `getLinkedNodes` returns all nodes linked to any node in `nodes`, which in this case is 5 random entries from the Phonetic Alphabet.
 
-And that's it! The resulting interface can be seen in the Example Interface section above.
+### Emails Interface Code
 
-### Interface 1/3 - Emails
+#### `main.coffee`
 
-The first data set that we built an interface for using Celestrium was an email dataset. This takes raw email data in json format and represents email users and lists as nodes, and flow of email as directed edges. The thicker an edge is, the more heavy the flow of emails between the two users is. An edge has a single direction if all the emails between two nodes are in one direction. An edge is bidirectional if there has been email communication in both directions between the two nodes.
-
-This analysis brought about some interesting results. There are many email lists that are always only on the receiving end of emails (such as `vball`) - being able to visually analyze the dataset made this fact very obvious. Also, using the Celestrium link strength chooser allowed us to see which relationships were more email-heavy than others.
-
-![image](https://f.cloud.github.com/assets/1238874/1699336/b163b194-5f92-11e3-9e97-023cd398f5c3.png)
-
-### `main.coffee`
 This is a standard implementation of the main entry-point to Celestrium.
 In this implementation, we define an ordering for our plugins based on what we think will allow for the best usability in exploring this dataset.
 
@@ -361,7 +605,8 @@ require ["Celestrium"], (Celestrium) ->
     instances["GraphView"].getLinkFilter().set("threshold", 0)
 ```
 
-### `EmailDataProvider.coffee`
+#### `EmailDataProvider.coffee`
+
 This is a very simple example of a DataProvider implementation that communicates with a backend server. `EmailDataProvider` hits the server with an ajax request and processes the returned data so that Celestrium can render it.
 
 ```coffeescript
@@ -385,35 +630,7 @@ define ["DataProvider"], (DataProvider) ->
       @ajax "get_related_nodes", data, callback
 ```
 
-<!-- The most unique thing about the emails dataset is that emails have directions. For this reason, we developed Celestrium to support directed edges.
-We can see that between many pairs of users, the communication is one-sided many times.
-Celestrium supports directed edges, so it is very simple for a developer to provide 'directed-ness' in their graphs.
-
-In implementing this, first a python script was written to clean raw data into json for the server to read. The server then digests all the emails and organizes them into a hashtable for easy access. -->
-
-#### Review of Celstrium
-
-
-In building this emails visualization, it was apparent how easy Celestrium made it to build a frontend from raw json data. The ease in defining link strengths also made it very flexible for us to try different ways to represent links, to see which led to the most effective visualization.
-
-One of the key features that came out of this dataset was the directed edges property. Since a prominent property of an email is the direction of the email (who sends it and who receives it), it is natural to want to show that directedness in the visualization. From this need, we allowed edges to have a direction property from the following possiblities: `{bidirectional, forward, backward}`.
-
-As we were developing this interface, we started realizing how cluttered the UI was. We added more and more plugins, which placed more and more boxes on the screen in various corners. We also realized that there were some plugins, such as the Dimensionality Slider that were not necessary to the emails dataset. To counter this issue, we built a plugins container that made it very customizable and easy for the developer to dictate which plugins would be included, and even what order they would be. We also allowed the plugins to be collapsed so the user could focus solely on the graph at hand.
-
-Currently, this dataset comes from raw static json data. It would be neat if Celestrium could handle changes in the server dynamically, and the backend was hooked up to a real email inbox. The existing implementation only shows an update to the graph if the user makes another request that includes the update. Future work in this would perhaps involve considering long-polling or sockets to show updates from the backend, live. This and other dynamically changing datasets would be expressed much more gracefully if that were the case.
-
-Overall, creating this interface gave us a very clear idea of what was necessary to make this a strong, flexible, and usable library for all kinds of graphs - it also gave us an idea of what our next steps are to make Celestrium even more versatile.
-
-### Interface 2/3 - Github Collaboration
-
-The Github dataset shows collaboration between users on Github; the higher the link strength between 2 users, the more public repos they have collaborated on together.
-First a python script was written to scrape the Github API and collect data into a JSON format.
-It was found to be straightforward to implement the GithubProvider class (code below) to connect this data to Celestrium, especially with the example implementations serving as guidance.
-
-![image](https://f.cloud.github.com/assets/774269/1699263/f6d3cd38-5f8b-11e3-990c-15a56594ea29.png)
-
-Looking at the distribution of collaborations, there were many relationships with few repos collaborated on, with some outliers of a very high number of repos collaborated on.
-This distribution inspired a LinkDistributionNormalizer plugin, where link strengths could be transformed linearly, logarithmically, or into percentiles to best fit the distribution of the data.
+### Github Collaboration Interface Code
 
 #### `main.coffee`
 
@@ -486,25 +703,10 @@ define ["DataProvider"], (DataProvider) ->
       @ajax "get_related_nodes", data, callback
 ```
 
-#### Future Work
+### Semantic Network Interface Code
 
-The goal of this dataset is to show collaboration relationships on Github.  However, only publicly available data could be used, which restricts this to public repos.
-In addition, the measure of link strength is arbitrary; I used the number of repos they collaborated on.  But should collaboration on a project with a few other people be counted the same as collaboration on a project with hundreds of other users?
-The metric for 'collaboration strength' could certainly be improved on.
+#### `main.coffee`
 
-Future work would also include connecting the Celestrium DataProvider endpoints to query the live Github API, not needing to download a static version of data.
-
-### Interface 3/3 - Semantic Networks
-
-The third data set that we built an interface for using Celestrium was a semantic network.
-More specifically, it was showing the results of performing **inference** over a semantic network (this is more well defined later.)
-Nodes represented every day concepts and the links showed closely they were inferred to be semantically related.
-
-#### Example of Semantic Network Interface
-
-![image](https://f.cloud.github.com/assets/1418690/1689464/df3411e8-5e22-11e3-8477-683173eb9d24.png)
-
-#### Main Script
 ```coffeescript
 localStorage.clear()
 requirejs.config
@@ -554,7 +756,7 @@ require ["Celestrium"], (Celestrium) ->
     success: main
 ```
 
-#### `DataProvider` Implementation
+#### `ConceptDataProvider.coffee`
 
 ```coffeescript
 # interface to uap's semantic network
@@ -592,194 +794,3 @@ define ["DataProvider"], (DataProvider) ->
       @dimSlider.setLinkStrength(link)
       return true
 ```
-
-The most interesting part of this implementation is that `ConceptProvider` doesn't define a link's strength, only a `coeffs` parameter, then it uses `DimSlider`'s `setLinkString` function as a filter on the link.
-This because the link strength's are actually a function of a polynomial in the **dimensionality** of the inference process, whose value is maintained in `DimSlider`.
-So on the server, each link's polynomial is constructed rather than a single value, the coefficients are sent to `DataProvider`, then `DimSlider` uses the current value of the "Dimensionality Slider" in the interface (see the example picture) to actually define the link's strength numerically.
-Therefore, when the slider is adjusted in the interface, the link strengths are changed and visualized in realtime.
-
-#### Review of Celestrium
-
-Celestrium's flexibility in defining the strength of a link was critical in creating this interface.
-This interface also prompted the design of the `linkFilter` feature in DataProvider, allowing the strength of the link to be defined with respect to the current state of the client interface.
-Additionally, this extra slider inspired the creation of the `Sliders` plugin, and allows this "Dimensionality Slider" to integrate seemlessly into the UI next to the other sliders.
-
-Another critical part of this interface is that adjusting the "Dimensionality Slider" updates the graph in real time.
-This was made by possible and actually straightforward through Celestrium's design.
-GraphView listens for changes to GraphModel and automatically updates itself.
-This made it very straightforward to update the graph because all that was needed was to modify the underlying GraphModel and the interface updated itself without any extra effort specific to this data set.
-
-Future work in this interface would be to include different types of nodes, which is something that Celestrium currently doesn't prohibit, but doesn't provide express functionality for.
-So, perhaps a next step is to provide functionality that supports having distinct types of nodes.
-More details of the specific needs of this dataset should be investigated before deciding on the specific features this would entail.
-
-In summary, creating this interface definitely helped evolve several features of Celestrium and validated several aspects of its design as well.
-It was found to be found to be very easy to establish the frontend for this data set, which is ultimately the goal of Celestrium.
-
-## Suggested Future Work
-
-Now that we've seen what Celestrium can do, it is worth detailing it's limitations and ideas for new functionality, the subjects of the following sections.
-Future contributors to Celestrium are encouraged to address these topics.
-
-###  Current Limitations
-
-> These are limitations of the current implementations.
-> Reducing these limitations is an easy way to get at future work.
-> I leave *new* features to @haosharon in the next section.
-
-Celestrium's design and implementation are certainly not without fault.
-Because Celestrium's efficacy is based on how easy it is for developers to use, issues of various scopes come into play.
-In an effort to explain the full spectrum, we now detail these issues progressing from the purely logistical to the more technical.
-
-#### Infrastructure
-
-While not as intellectually stimulating as other problems, Celestrium's infrastructure could perhaps be improved in the following ways.
-
-Firstly, Celestrium is written primarily in Coffeescript, which compiles to Javascript.
-Because of this, any developer using Celestrium must bring the tools to do this compilation into their project when they might not necessarily want or be able to.
-Looking into using requirejs's optimization tool on the compiled output, Celestrium could potentially release a minified, single javascript file, making it much easier to simply put in a project.
-
-Additionally, Celestrium uses Less, which compiles to CSS. Currently, Celestrium avoids the need to compile its less files but at the cost of users of celestrium needing to load the Less compiler onto any webpage using Celestrium.
-A similar, compiled version of the CSS should be made available for Celestrium as well.
-
-#### Code Organization
-
-Moving into how Celestrium organizes its modules, several things could be improved.
-
-As mentinoed previously, circular dependencies amongst plugins are not allowed.
-The only drawback as it stands is that plugins must be specified according the their partial ordering of depedencies in calling `Celestrium.init`.
-It remains to be seen if there is a good use case which would merit this or if there is a complete argument against circular dependencies.
-Either allowing circular dependencies or providing a more thorough argument against them would at least clarify the appropriateness of this decision.
-
-Additionally, the Layout plugin, while convenenient, is not as configurable as it could perhaps be.
-While this isn't problematic in isolation, it is problematic that many of the other plugins rely on using Layout, because not wanting to use Layout then implies one cannot use any plugins which depends on it.
-Making Layout more configurable and/or removing other plugins' dependence on it would certainly make Celestrium more modular.
-
-#### Scalability
-
-How large of a graph can interfaces created by Celestrium handle?
-This question is open to interpretation, so first some framing is in order.
-
-Firstly, we consider the scalability of the backend database a separate issue.
-Celestrium is an entirely frontend library, so the specifics of the database performance certainly affect its use in practice, but it is not fundamentally part of Celestrium and so is not a good metric by which to judge Celestrium's performance.
-
-Therefore, we will focus on the performance of the frontend.
-This was done by measuring certain metrics for rendering different numbers of nodes and links, all populated entirely within the frontend.
-Tests were performed on a 15" MacBook Pro with Retina Display, 2.6 GHz Intel Core i7 with 8 GB 1600 MHz DDR3 RAM using Goolge Chrome 31.0.1650.57.
-Specifically, nine different tests were conducted where the number of nodes and links were from {1000, 2500, 5000}.
-Then the following metrics were evaluated and tabulated.
-
-* **Memory Usage** - The amount of memory used by the tab in Chrome
-* **Time to Populate the Graph** - The amount of time it took to add the specified number of nodes and links to the graph.
-* **Responsiveness of the Visualization** - Once the graph was completely populated, d3's force directed layouts iterates and on each **tick**, the graph updates the location of the nodes and links. To measure the responsiveness, the amount of time between ticks for the first ten seconds of the rendering was averaged.
-
-Before going into the details of the results, it is worth noting that while the interface can handle these sizes of graphs, it is not a typical use case.
-The purpose of these interfaces is for a human to explore these graphs and a human would have a hard time understanding a graph of even 1000 nodes and links.
-Testing on a more reasonable scale i.e. 100 nodes and 1000 links yielded very good performance.
-We found ~24 ms/tick which equates to ~40 updates per second, which is high enough to produce very fluid rendering of the graph to the user.
-The memory usage was negligble and it took less than one second to populate the graph.
-In summary, at scales a human could understand, Celestrium has been found to perform very well.
-
-The purpose of explaining the following metrics, then, is to understand the limits of Celestrium's interface, human capabilities aside.
-These limitations are worth nothing and improving because they could help improve performance on slower machines which may have trouble even on more reasonably sized graphs.
-Additionally, it is impossible to rule out a use case where these sized graphs are actually necessary to render.
-With that in mind, let's start with the memory used in each test case.
-
-##### Memory Usage
-
-The amount of memory used by the tab in chrome according to Chrome's Task Manager was recorded and the following results were found.
-
-![image](https://f.cloud.github.com/assets/1418690/1689050/6139b0ec-5e16-11e3-9221-b234726e33f4.png)
-
-To summarize, the amount of memory certainly scales with both links and nodes, but it seems to grow much more with the number of nodes.
-The absolute scale of these numbers is well within the acceptable range of memory usage.
-For reference, a tab with Gmail open was using 170 MB, putting the highest memory used by Celestrium at less than 65% of Gmail.
-
-##### Time to Populate the Graph
-
-Taking the time to simply populate the graph seemed to result in more dubious results for Celestrium.
-
-To explain the following three charts, the first shows just the time it took to add the nodes to the graph for each test.
-The second shows just the time it took to add the links to the graph.
-The third then shows the total time, which is the sum of the first two.
-
-![image](https://f.cloud.github.com/assets/1418690/1689134/a544cf72-5e18-11e3-987e-a1910a7a5836.png)
-
-A few things are notable here.
-
-The first is the general range of the results. The fastest test took approximately 6 seconds while the slowest took 4 **minutes**.
-
-The second is that the time to add a certain number of nodes was irrespective of the number of links, while the opposite is not true and the reason for this is perhaps somewhat subtle - the nodes were always added first.
-Link objects must reference the actual node objects they are linking, so the nodes must be created first.
-The number of links added will never affect the time to load the nodes because it occurs after the noads are loaded.
-However, it is somewhat unclear why the number of nodes affects the time to add a link.
-We hypothesize that this is due to the overlap in the process of adding the links and the events still being fired from adding the nodes.
-
-And lastly, the performance in loading the graph seems to follow the results of memory usage in that the number of nodes seems to have a greater impact on the time than the number of links.
-
-How could this be improved?
-Perhaps the fundamental issue is that nodes and links must be added individually rather than all at once.
-This design choice was made to more easily communicate with the backend about updating the state of the graph.
-In particular, when adding a node to the graph, the only links that must be fetched to keep the grpah current are between that node and all the nodes currently present.
-If more than one node is added a time, the links between each pair of nodes within that new group must now also be considered, greatly increasing the complexity the developer must deal with.
-However, if high performance for larger graphs and/or slower machines is required, we feel this is the largest bottleneck.
-
-##### Visualization Responsiveness
-
-The last metric to consider is how quickly the force directed layout updates itself.
-
-It is worth mentioning the algorithm that d3 implements is the [Barnes-Hut approximation](http://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation) which provides an asymptotic runtime of `O(n*log(n))` for `n` nodes, as opposed to a naive implementation's `O(n^2))`.
-
-Additionally, the rendering speed is improved if the visualization is zoomed out and worsened when zoomed in.
-For these tests, the default zoom level was used for uniformity.
-
-The following metrics were found by, once the graph was completely loaded, averaging the time between updates of the layout for the first ten seconds of the simulation.
-Here is what was found:
-
-![image](https://f.cloud.github.com/assets/1418690/1689232/a233a468-5e1b-11e3-9801-196c8c156c91.png)
-
-First, it seems there is a fair amount of variability, as the results go from 1785 ms for 2500 nodes and links to 841 ms when the number of links *increases* to 5000.
-A possible reason for this is that, due to the large number of nodes, some nodes were not always visible on the screen, perhaps reducing the browser's rendering computation.
-Perhaps in the case with 2500 nodes and 5000 links, more nodes than usual were not visible, speeding up the runtime of those iterations.
-
-To explain the >10000 entry, using 5000 nodes and links resulted in the layout never completing it's second iteration in the first ten seconds.
-
-In summary, it seems Celestrium's interface can definitely become unusable when scaled up these sized graphs.
-To overcome this, one could leverage the effects of zooming and when slow layout iterations are detected, zoom out.
-Additionally, a force directed layout aproach may fundamentally not be feasable at this scale, so a one time static layout algorithm may be necessary at this scale.
-Or, one could run the layout internally without updating the UI, then simply render the final result of the layout process at the end.
-Again, because humans most likely would not be able to make sense of so much data, making this interface usable at this scale may not be a priority, but we suggest at least detecting when the layout iterations become slow and handling it accordingly so the user is not left simply staring at a faltering visualization.
-
-### General Future Work
-
-For the future, there are many features we'd like to add.
-
-* **Minimap** when a user explores a very large dataset, it is sometimes easy to get lost in the low-level details. We'd like to provide a minimap so users can always have a sense of the entire graph.
-
-* **Clustering** Celestrium currently uses D3's force-directed layout. It would be nice to be able to define some clustering/grouping of nodes, perhaps through positioning or drawing a shape around the group.
-
-* **Alternate Layouts** In addition to clustering, there are many other D3 layouts that we could potentially use. (Grid, linear, hierarchical, etc)
-
-* **Dynamically update graph** Currently, updates from the server only show when we make another request. If we could use some polling functionality, or perhaps sockets, we could dynamically show changes from the server.
-
-* **Interactive tutorial** Since Celestrium provides a lot of plugins and features, it would be nice if we could provide an interactive tutorial for the user to get started using Celestrium to analyze datasets. There are many libraries available to do this, such as [`intro.js`](http://usablica.github.io/intro.js/).
-
-* **Serialization and caching** On every addition to the graph, we make a request to the server. In efforts to optimize performance, we could use Javascript's `localStorage` or `sessionStorage` to make this happen.
-
-* **Custom mapping to visual dimensions** When nodes or edges have continuous values, we want to allow the user to specify how that should be represented. Currently, we use histograms to bin link strengths. However, it could be possible that the developer can define their own views to display values and attributes of the nodes and links.
-
-* **Graph analysis** Since we have such a well formed graph, it seems natural to be able to perform graph analysis on our data. It would be useful to have plugins for different analyses such as PageRank, shortest path, and different search algorithms.
-
-* **Writeable Graph** Currently, our implementation is read-only. A huge feature would be to allow users to edit the graph. This would be a huge task to undertake, but would be great for users that see the need to build graphs interactively.
-
-* **Unit Testing and Continuous Integration** We'd like to make it easy to test our separate plugins. It'd be nice to have a testing framework so that when we develop for Celestrium and contribute through pull requests, we can ensure their robustness through automatic unit tests.
-
-* **Semantic Versioning** In addition to unit testing and continuous integration, we'd like to make Celestrium easy to develop from by declaring v1.0.0 pursuant to [semantic versioning](http://semver.org/).
-
-## Conclusion
-
-Celestrium was created out of the desire to reduce the activation energy in creating graph visualization and exploration tools for a variety of different data sets.
-To that end, it created it's own plugin architecture and plugins to allow interfaces to be created with only the desired components.
-In using Celestrium for different data sets, it was found that it was general enough to handle each of them and provide meaningful interfaces.
-However, their definitely remain opportunities for future work to improve Celestrium, ranging from logistical improvements to more technical subjects.
-Ultimately, we feel we have created a very practical tool that can be immediately put to use.
