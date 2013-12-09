@@ -180,6 +180,10 @@ LinkDistribution
 * provides a variably smoothed PDF of the distribution of link strengths.
 * A slider on the PDF filters links, such that only links with weight about the threshold are visible on the graph.
 
+LinkDistributionNormailzer
+* allows transformations of all link weights to better fit the distribution
+* Available transformations are linear, logarithmic (base 2 and base 10), and percentile.
+
 NodeSearch
 * Provides an input box to add a single node to the graph
 * developer supplies a method in the constructor to get a list of all nodes in the graph
@@ -398,7 +402,8 @@ At these times, Celestrium can be seen to be slightly laggy.
 
 The Github dataset shows collaboration between users on Github; the higher the link strength between 2 users, the more public repos they have collaborated on together.
 First a python script was written to scrape the Github API and collect data into a JSON format.
-It was found to be straightforward to implement the GithubProvider class (code below) to connect this data to Celestrium, especially with the example implementations serving as guidance.
+A GithubProvider class was then written to provide the get_nodes function required in the Node Search plugin, and the get_links and get_related_nodes functions required in the DataProvider.
+
 
 ![image](https://f.cloud.github.com/assets/774269/1699263/f6d3cd38-5f8b-11e3-990c-15a56594ea29.png)
 
@@ -483,6 +488,14 @@ In addition, the measure of link strength is arbitrary; I used the number of rep
 The metric for 'collaboration strength' could certainly be improved on.
 
 Future work would also include connecting the Celestrium DataProvider endpoints to query the live Github API, not needing to download a static version of data.
+
+
+####
+The work required to implement the functions required by Celestrium (DataProvider and NodeSearch plugins) was straightforward for this dataset, and most likely other datasets as well.  I created this dataset specifically for Celestrium, which meant structuring it for this use, as opposed to applying Celestrium to an existing dataset.  This helped my ease of implementation.  However, representations of nodes and links is a core part of graph-like datasets in Celestrium, so accessing these via Celestrium.
+
+Customizing which plugins to use in the main script generally worked well, needing simply to add a line with the plugin's name.  However, some plugins had dependencies on others and therefore needed to be listed in certain orders (ex. GraphModel before GraphView).This requires the develpoer to have some understanding of how Celestrium works, or debug it if they list plugins in a wrong order.
+
+Overall, I found Celestrium to have a quick setup time going from having a dataset to seeing it visualized.  The plugin architecture is very good at presenting modular components for developers to understand and customize their visualization.
 
 ### Interface 3/3 - Semantic Networks
 
