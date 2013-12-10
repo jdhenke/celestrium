@@ -90,7 +90,7 @@ The difference may or may not be obvious, but it is important in understanding C
 
 To make this concrete, consider three plugins which interact with eachother.
 
-* GraphModel contains the underlying node and link objects which describe the currently visualize graph
+* GraphModel contains the underlying node and link objects which describe the currently visualized graph
 * GraphView is responsible for rendering the graph on the screen and listens for changes to the GraphModel
 * DataProvider listens to the GraphView for certain user actions and when fired, contacts the server and updates the GraphModel with new nodes or links with the server's response
 
@@ -108,7 +108,7 @@ Celestrium addresses these needs by separating the entry of parameters and insta
 * A plugin's **init** function accepts a dictionary of instances of other plugins.
 
 The code which facilitates this is actually very concise and is shown here. This is out of a special module called `Celestrium`, which has one function, `init`.
-Celestrium's `init` function has a different meaning than other plugins' init functions, and was probably a pour naming decision in retrospect.
+Celestrium's `init` function has a different meaning than other plugins' init functions, and was probably a poor naming decision in retrospect.
 The Celestrium module is different because it defines the plugin architecture which the other plugins adhere to and is responsible for bootstrapping the process of instantiating all the other plugins.
 Here is the code it uses to do so:
 
@@ -189,6 +189,8 @@ Note that an interface can choose which of these plugins to include and can also
 * scales link weights of various distributions to the range [0,1]
 * Available transformations are linear, logarithmic (base 2 and base 10), and percentile.
 
+![image](https://f.cloud.github.com/assets/774269/1708503/6d3374ae-610f-11e3-8d2a-a7e148bccb1e.png)
+
 **NodeSearch**
 * Provides an input box to add a single node to the graph
 * developer supplies a method in the constructor to get a list of all nodes in the graph
@@ -198,8 +200,6 @@ Note that an interface can choose which of these plugins to include and can also
 **NodeSelection**
 * allows nodes to be selected or unselected
 * provides functions to access the state of the selected nodes
-
-![image](https://f.cloud.github.com/assets/774269/1708503/6d3374ae-610f-11e3-8d2a-a7e148bccb1e.png)
 
 **Sliders**
 * provides an interface to add sliders to the ui
