@@ -3,7 +3,7 @@
 This appendix includes the core parts of several different implementations using Celestrium.
 The first is for an interface to explore a randomly generated graph.
 We felt this was a very simple implementation as it doesn't require a backend and should be considered a lower bound on the cost of implementation for comparison against the following interfaces.
-The three following interfaces as the three case studies as described in the Three Interface Case Study section.
+The three following interfaces as the three case studies as described in the Three Interface Case Studies section.
 
 ### Random Graph Interface Code
 
@@ -45,7 +45,7 @@ This script is the entry point for code execution.
 First, it configures the location where requirejs finds its modules.
 
 Then `require` is used to load the `Celestrium` module definition and initiate the desired plugins for this interface.
-`Celestrium.init` expects a dictionary with keys as the `requirejs` path to the plugin to be instantiated and values as the object to be fed as an argument to that plugin's constructor, as described in the Implementation Section.
+`Celestrium.init` expects a dictionary with keys as the `requirejs` path to the plugin to be instantiated and values as the object to be fed as an argument to that plugin's constructor, as described in the Celestrium Implementation section.
 
 #### `RandomDataProvider.coffee`
 
