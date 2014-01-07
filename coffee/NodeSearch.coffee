@@ -19,7 +19,8 @@ define [], () ->
 
     render: ->
       $container = $("<div />").addClass("node-search-container")
-      $input = $("<input type=\"text\" placeholder=\"Node Search...\">").addClass("node-search-input")
+      $input = $("<input type=\"text\" placeholder=\"Node Search...\">")
+        .addClass("node-search-input")
       $container.append $input
       @$el.append $container
       $input.typeahead
@@ -33,6 +34,7 @@ define [], () ->
       newNode = text: datum.value
       h = @graphModel.get("nodeHash")
       newNodeHash = h(newNode)
-      @graphModel.putNode newNode  unless _.some @graphModel.get("nodes"), (node) ->
+      nodeWithHashExists = _.some @graphModel.get("nodes"), (node) ->
         h(node) is newNodeHash
+      @graphModel.putNode newNode unless nodeWithHashExists
       $(e.target).blur()

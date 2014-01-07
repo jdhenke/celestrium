@@ -25,7 +25,7 @@ define [], () ->
     initialize: (options) ->
       # filter between model and visible graph
       # use identify function if not defined
-      @linkFilter = new LinkFilter(this);
+      @linkFilter = new LinkFilter(this)
       @listenTo @linkFilter, "change:threshold", @update
 
     render: ->
@@ -36,7 +36,8 @@ define [], () ->
         .charge(-500)
         .gravity(0.2)
       @linkStrength = (link) =>
-        return (link.strength - @linkFilter.get("threshold")) / (1.0 - @linkFilter.get("threshold"))
+        return (link.strength - @linkFilter.get("threshold")) /
+          (1.0 - @linkFilter.get("threshold"))
       @force.linkStrength @linkStrength
       svg = d3.select(@el).append("svg:svg").attr("pointer-events", "all")
       zoom = d3.behavior.zoom()
@@ -98,7 +99,9 @@ define [], () ->
       # otherwise, translate and scale according to zoom
       zoomCapture.call(zoom.on("zoom", -> # ignore double click to zoom
         return  if translateLock
-        workspace.attr "transform", "translate(#{d3.event.translate}) scale(#{d3.event.scale})"
+        workspace.attr "transform",
+          "translate(#{d3.event.translate}) scale(#{d3.event.scale})"
+
       )).on("dblclick.zoom", null)
 
       # inner workspace which nodes and links go on
@@ -116,24 +119,35 @@ define [], () ->
       links = @model.get("links")
       filteredLinks = if @linkFilter then @linkFilter.filter(links) else links
       @force.nodes(nodes).links(filteredLinks).start()
-      link = @linkSelection = d3.select(@el).select(".linkContainer").selectAll(".link").data(filteredLinks, @model.get("linkHash"))
+      link = @linkSelection = d3.select(@el)
+        .select(".linkContainer")
+        .selectAll(".link")
+        .data(filteredLinks, @model.get("linkHash"))
       linkEnter = link.enter().append("line")
         .attr("class", "link")
-        .attr 'marker-end', (link) ->
-          'url(#Triangle)' if link.direction is 'forward' or link.direction is 'bidirectional'
-        .attr 'marker-start', (link) ->
-          'url(#Triangle2)' if link.direction is 'backward' or link.direction is 'bidirectional'
+        .attr('marker-end', (link) ->
+          'url(#Triangle)' if link.direction is 'forward' or\
+             link.direction is 'bidirectional')
+        .attr('marker-start', (link) ->
+          'url(#Triangle2)' if link.direction is 'backward' or\
+             link.direction is 'bidirectional')
+
       @force.start()
       link.exit().remove()
       link.attr "stroke-width", (link) => 5 * (@linkStrength link)
-      node = @nodeSelection = d3.select(@el).select(".nodeContainer").selectAll(".node").data(nodes, @model.get("nodeHash"))
-      nodeEnter = node.enter().append("g").attr("class", "node").call(@force.drag)
+      node = @nodeSelection = d3.select(@el)
+        .select(".nodeContainer")
+        .selectAll(".node")
+        .data(nodes, @model.get("nodeHash"))
+      nodeEnter = node.enter()
+        .append("g")
+        .attr("class", "node")
+        .call(@force.drag)
       nodeEnter.append("text")
            .attr("dx", 12)
            .attr("dy", ".35em")
-           .text((d) ->
-            d.text
-          )
+           .text (d) ->
+             d.text
 
       nodeEnter.append("circle")
            .attr("r", 5)

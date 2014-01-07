@@ -1,9 +1,17 @@
 {
   "devDependencies": {
-    "karma": ">= 0.10.2",
-    "coffee-script": "*"
+    "coffee-script": "~1.6.3",
+    "grunt-cli": "~0.1.11",
+    "grunt": "~0.4.2",
+    "grunt-coffeelint": "0.0.8",
+    "grunt-contrib-coffee": "~0.7.0",
+    "grunt-karma": "~0.6.2",
+    "grunt-contrib-uglify": "~0.2.7",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-contrib-less": "~0.8.3",
+    "grunt-contrib-cssmin": "~0.7.0"
   },
   "scripts": {
-    "test": "./node_modules/.bin/coffee --compile -o test/ test-coffee/ && ./node_modules/.bin/coffee --compile -o core/ core-coffee/ && ./node_modules/.bin/karma start --single-run"
+    "test": "grunt test"
   }
 }

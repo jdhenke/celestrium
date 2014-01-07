@@ -6,7 +6,8 @@ define [], () ->
     init: (instances) ->
       @graphModel = instances["GraphModel"]
       instances["KeyListener"].on "down:16:187", () =>
-        @getLinkedNodes instances["NodeSelection"].getSelectedNodes(), (nodes) =>
+        @getLinkedNodes instances["NodeSelection"].getSelectedNodes(),
+        (nodes) =>
           _.each nodes, (node) =>
             @graphModel.putNode node if @nodeFilter node
       @graphModel.on "add:node", (node) =>
@@ -20,11 +21,11 @@ define [], () ->
     # should call callback with a respective array of links from node to nodes
     # source and target will automatically be assigned
     getLinks: (node, nodes, callback) ->
-      throw "must implement getLinks for your data provider"
+      throw new Error("must implement getLinks for your data provider")
 
     # should call callback with an array of nodes linked to any of nodes
     getLinkedNodes: (nodes, callback) ->
-      throw "must implement getLinkedNodes for your data provider"
+      throw new Error("must implement getLinkedNodes for your data provider")
 
     # called on each node - only adds the node if returns true
     nodeFilter: -> true

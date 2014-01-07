@@ -51,7 +51,7 @@ define [], () ->
 
       @$parent.mousedown (e) =>
         if e.shiftKey
-          @dragging = true;
+          @dragging = true
           _.extend @startPoint, {
             x: e.clientX
             y: e.clientY
@@ -63,7 +63,7 @@ define [], () ->
           }
           @determineSelection()
 
-          return false;
+          return false
 
       @$parent.mousemove (e) =>
         if e.shiftKey
@@ -75,7 +75,7 @@ define [], () ->
             }
             @renderRect()
             @determineSelection()
-            return false;
+            return false
 
       @$parent.mouseup (e) =>
         @dragging = false
@@ -104,7 +104,7 @@ define [], () ->
       @_clearRect @startPoint, @prevPoint
       @_drawRect @startPoint, @currentPoint
 
-    rectDim: (startPoint, endPoint) =>
+    rectDim: (startPoint, endPoint) ->
       dim = {}
       dim.x = if startPoint.x < endPoint.x then startPoint.x else endPoint.x
       dim.y = if startPoint.y < endPoint.y then startPoint.y else endPoint.y

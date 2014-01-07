@@ -31,10 +31,13 @@ define [], () ->
       scale = d3.scale.linear()
         .domain([2,200])
         .range([0, 100])
-      instances["Sliders"].addSlider "Smoothing", scale(@windowModel.get("window")), (val) =>
-        @windowModel.set "window", scale.invert(val)
+      instances["Sliders"].addSlider "Smoothing",
+        scale(@windowModel.get("window")), (val) =>
+          @windowModel.set "window", scale.invert(val)
       @render()
-      instances["Layout"].addPlugin @el, @options.pluginOrder, 'Link Distribution'
+      instances["Layout"].addPlugin @el,
+        @options.pluginOrder,
+        'Link Distribution'
 
     render: ->
 
@@ -173,7 +176,7 @@ define [], () ->
       ###
 
       threshold = @graphView.getLinkFilter().get("threshold")
-      visiblePDF = _.filter pdf, (bin) =>
+      visiblePDF = _.filter pdf, (bin) ->
         bin.x > threshold
       if visiblePDF.length > 0
         i = pdf.length - visiblePDF.length

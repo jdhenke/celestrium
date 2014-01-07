@@ -1,18 +1,167 @@
 Celestrium ![Build Status](https://travis-ci.org/jdhenke/celestrium.png?branch=master)
 ==========
 
-> A front-end infrastructure to explore graph-based data.
+Easily create graph visualization and exploration interfaces on the web.
 
-## Data Set Visualizations Using Celestrium:
+## Getting Celestrium
 
-  - **Semantic Networks** [repo](https://github.com/jdhenke/uap), [herokuapp](http://conceptnet.herokuapp.com/)
-  - **Emails** [repo](https://github.com/haosharon/emails)
-  - **Github Collaboration** [repo](https://github.com/jhelbert/github_collaborators)
+See [Celestrium's Releases](https://github.com/jdhenke/celestrium/releases) - full and minified js/css files are attached to each release. Just include them like you typically would.
 
-You essentially can add Celestrium as a [git submodule](http://git-scm.com/book/en/Git-Tools-Submodules), compile it and use it in your front-end.
+```html
 
-## Links
+<!-- include necessary third part libraries -->
+<script type="text/javascript" src="path/to/jquery.js"></script>
+<script type="text/javascript" src="path/to/jquery.typeahead.js"></script>
+<script type="text/javascript" src="path/to/underscore.js"></script>
+<script type="text/javascript" src="path/to/backbone.js"></script>
+<script type="text/javascript" src="path/to/d3.js"></script>
 
-#### [How to Contribute](./CONTRIBUTING.md)
-#### [Licensing](./LICENSE)
-#### [Many Thanks!](./THANKS.md)
+<!-- include celestrium code -->
+<script type="text/javascript" src="path/to/celestrium.js"></script>
+<link rel="stylesheet" type="text/css" href="path/to/celestrium.css">
+
+```
+
+> TODO - Link to example repo using released files.
+
+## API
+
+### Main Entry Point
+
+Celestrium is accessible as the globally defined `celestrium` variable.
+
+You can use it's plugins, and any you create, with `celestrium.init`.
+It accepts a dictionary with each key, value pair as a plugin's URI and it's constructor argument, respectively.
+
+```coffeescript
+celestrium.init
+  "Layout":
+    "el": document.querySelector '#workspace'
+  "KeyListener": {}
+  # etc...
+```
+
+Note, a second argument to `celestrium.init` may be a function, which will be called after all plugins have been initialized with a dictionary that has key, value pairs as the uri, instance of that plugin.
+
+```coffeescript
+celestrium.init pluginsDict, (instances) ->
+  someInstance = instances[someURI]
+```
+
+### General Plugin Spec
+
+Here's the spec for a plugin class which may be used by celestrium.
+
+```coffeescript
+
+# example plugin class definition
+class ExamplePlugin
+
+  # URI should be a string unique to this plugin
+  @uri: "ExamplePlugin"
+
+  # specify which attributes to which to assign instances of other attributes
+  @needs:
+    "otherPlugin": "OtherPluginURI"
+
+  # args is the value from celestrium.init
+  constructor: (arg) ->
+    # can reference @otherPlugin here
+
+# register your plugin so it can be specified in celestrium.init
+celestrium.register(ExamplePlugin)
+
+```
+
+The **uri** is a hard requirement for every plugin.
+This is the string used in `celestrium.init` to locate the class definition.
+
+The **needs** attribute is optional.
+It defines which attributes to assign instances of other plugins.
+The attributes will be available to the plugin instance, even in the constructor.
+
+The **constructor** is optional, and will be provided a single argument - the value for it's URI key in the dictionary passed to `celestrium.init`.
+These are typically things which are specific to an impelementation.
+
+To use your plugin, you are required to call `celestrium.register` with the class definition as the argument.
+This allows you to reference your plugin by it's URI in `celestrium.init`.
+Your plugins, therefore, must be registered *before* being referenced in `celestrium.init`.
+It is therefore recommended to run `celestrium.init` after the page has loaded.
+
+### Default Plugins
+
+Here's how to use Celestrium's default plugins.
+
+#### DataProvider
+
+This is an abstract class definition which should be extended to allow the graph to be populated. Here's an example.
+
+```coffeescript
+
+# define an implementation of DataProvider
+class ExampleDataProvider extends celestrium.defs["DataProvider"]
+
+  @uri: "ExampleDataProvider"
+
+  # calls callback with nodes adjacent to any node in nodes
+  getNeighbors: (nodes, callback) ->
+
+  # calls callback with links between node and nodes
+  getLinks: (node, nodes, callback) ->
+
+celestrium.register ExampleDataProvider
+
+```
+
+The **getNeighbors** function must call `callback` with an array of node objects for each node adjacent to any node in `nodes`.
+Node objects are javascript objects and should not conflict with [d3's attributes](https://github.com/mbostock/d3/wiki/Force-Layout#wiki-nodes).
+Additionally, a `text` attribute should be defined as the text to be displayed next to the node in the graph.
+
+The **getLinks** function must call its `callback` with an array of link objects, `A`, st. `A[i]` is the link object for the link from `node` to `nodes[i]`.
+`null` values are ignored.
+Node objects are javascript objects and should not conflict with [d3's attributes](https://github.com/mbostock/d3/wiki/Force-Layout#wiki-links) - DataProvider automatically assigns each link's source and target per this specification.
+A `strength` attribute may also be defined for a link and must be between 0 and 1.
+The default value is 1.
+
+You can now reference your Data Provider implementation in `celestrium.init` with it's URI as the key and anything as it's value, typically `{}`.
+
+#### Graph
+
+#### Key Listener
+
+#### Layout
+
+#### Sliders
+
+#### Force Sliders
+
+#### Link Distribution
+
+#### Node Details
+
+#### Node Search
+
+#### Stats
+
+## LICENSE
+
+    The MIT License (MIT)
+
+    Copyright (c) 2013 Joseph Henke
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of
+    this software and associated documentation files (the "Software"), to deal in
+    the Software without restriction, including without limitation the rights to
+    use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+    the Software, and to permit persons to whom the Software is furnished to do so,
+    subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+    FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+    COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+    IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

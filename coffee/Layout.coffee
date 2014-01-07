@@ -57,19 +57,6 @@ define [], () ->
     init: () ->
       # a dictionary of lists, so we can order plugins
       @pluginWrappers = {}
-
-      # TODO: find somewhere to put these
-      # @bottom = $("<div class=\"plugin-view\" id=\"bottom-center-outer-container\"><button id=\"toggle\">Show/Hide</button></div>")
-      # @bottomWrapper = new PluginWrapper(
-      #   plugin: @bottom
-      #   )
-      # @bottomRight = $("<div class=\"plugin-view\"><a href=\"https://github.com/jdhenke/celestrium\">celestrium repo</a></div>")
-      # @bottomRightWrapper = new PluginWrapper(
-      #   plugin: @bottomRight
-      #   )
-      # @pluginWrappers.push @bottomWrapper
-      # @pluginWrappers.push @bottomRightWrapper
-
       @render()
 
     render: ->

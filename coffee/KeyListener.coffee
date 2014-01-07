@@ -22,7 +22,7 @@ define [], () ->
         delete state[e.which] if e.isDefaultPrevented()
 
       # this ignores keypresses from inputs
-      $(window).keyup (e) =>
+      $(window).keyup (e) ->
         return if e.target isnt target
         delete state[e.which]
 

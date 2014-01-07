@@ -19,5 +19,5 @@ node_modules
 .DS_Store
 
 # javascript output folders
-core
-test
+dist
+test/js
