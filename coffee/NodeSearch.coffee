@@ -1,40 +1,44 @@
 # provides an input box which can add nodes to the graph
-define [], () ->
 
-  class NodeSearch extends Backbone.View
+class NodeSearch extends Backbone.View
 
-    events:
-      "typeahead:selected input": "addNode"
+  @uri: "NodeSearch"
+  @needs:
+    graphModel: "GraphModel"
+    keyListener: "KeyListener"
+    layout: "Layout"
 
-    constructor: (@options) ->
-      super()
+  events:
+    "typeahead:selected input": "addNode"
 
-    init: (instances) ->
-      @graphModel = instances["GraphModel"]
-      @listenTo instances["KeyListener"], "down:191", (e) =>
-        @$("input").focus()
-        e.preventDefault()
-      @render()
-      instances["Layout"].addPlugin @el, @options.pluginOrder, 'Search'
+  constructor: (@options) ->
+    super()
+    @listenTo @keyListener, "down:191", (e) =>
+      @$("input").focus()
+      e.preventDefault()
+    @render()
+    @layout.addPlugin @el, @options.pluginOrder, 'Search'
 
-    render: ->
-      $container = $("<div />").addClass("node-search-container")
-      $input = $("<input type=\"text\" placeholder=\"Node Search...\">")
-        .addClass("node-search-input")
-      $container.append $input
-      @$el.append $container
-      $input.typeahead
-        prefetch: @options.prefetch
-        local: @options.local
-        name: "nodes"
-        limit: 100
-      return this
+  render: ->
+    $container = $("<div />").addClass("node-search-container")
+    $input = $("<input type=\"text\" placeholder=\"Node Search...\">")
+      .addClass("node-search-input")
+    $container.append $input
+    @$el.append $container
+    $input.typeahead
+      prefetch: @options.prefetch
+      local: @options.local
+      name: "nodes"
+      limit: 100
+    return this
 
-    addNode: (e, datum) ->
-      newNode = text: datum.value
-      h = @graphModel.get("nodeHash")
-      newNodeHash = h(newNode)
-      nodeWithHashExists = _.some @graphModel.get("nodes"), (node) ->
-        h(node) is newNodeHash
-      @graphModel.putNode newNode unless nodeWithHashExists
-      $(e.target).blur()
+  addNode: (e, datum) ->
+    newNode = text: datum.value
+    h = @graphModel.get("nodeHash")
+    newNodeHash = h(newNode)
+    nodeWithHashExists = _.some @graphModel.get("nodes"), (node) ->
+      h(node) is newNodeHash
+    @graphModel.putNode newNode unless nodeWithHashExists
+    $(e.target).blur()
+
+celestrium.register NodeSearch

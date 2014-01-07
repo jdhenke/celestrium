@@ -11,41 +11,44 @@ provides an interface to add sliders to the ui
 sliders have range [0, 100]
 
 ###
-define [], () ->
 
-  class SlidersView extends Backbone.View
+class SlidersView extends Backbone.View
 
-    constructor: (@options) ->
-      super()
+  @uri: "Sliders"
+  @needs:
+    layout: "Layout"
 
-    init: (instances) ->
-      @render()
-      instances["Layout"].addPlugin @el, @options.pluginOrder, 'Sliders'
+  constructor: (@options) ->
+    super()
+    @render()
+    @layout.addPlugin @el, @options.pluginOrder, 'Sliders'
 
-    render: () ->
-      $container = $ """
-        <div class="sliders-container">
-          <table border="0">
-          </table>
-        </div>
-      """
-      $container.appendTo @$el
-      return this
+  render: () ->
+    $container = $ """
+      <div class="sliders-container">
+        <table border="0">
+        </table>
+      </div>
+    """
+    $container.appendTo @$el
+    return this
 
-    addSlider: (label, initialValue, onChange) ->
+  addSlider: (label, initialValue, onChange) ->
 
-      $row = $ """
-        <tr>
-          <td class="slider-label">#{label}: </td>
-          <td><input type="range" min="0" max="100"></td>
-        </tr>
-      """
+    $row = $ """
+      <tr>
+        <td class="slider-label">#{label}: </td>
+        <td><input type="range" min="0" max="100"></td>
+      </tr>
+    """
 
-      $row.find("input")
-        .val(initialValue)
-        .on "change", () ->
-          val = $(this).val()
-          onChange(val)
-          $(this).blur()
+    $row.find("input")
+      .val(initialValue)
+      .on "change", () ->
+        val = $(this).val()
+        onChange(val)
+        $(this).blur()
 
-      @$("table").append $row
+    @$("table").append $row
+
+celestrium.register SlidersView

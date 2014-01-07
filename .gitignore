@@ -20,4 +20,3 @@ node_modules
 
 # javascript output folders
 dist
-test/js
