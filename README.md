@@ -1,28 +1,9 @@
-Celestrium ![Build Status](https://travis-ci.org/jdhenke/celestrium.png?branch=master)
+Celestrium
 ==========
 
 Easily create graph visualization and exploration interfaces on the web.
 
-## Getting Celestrium
-
-See [Celestrium's Releases](https://github.com/jdhenke/celestrium/releases) - full and minified js/css files are attached to each release. Just include them like you typically would.
-
-```html
-
-<!-- include necessary third part libraries -->
-<script type="text/javascript" src="path/to/jquery.js"></script>
-<script type="text/javascript" src="path/to/jquery.typeahead.js"></script>
-<script type="text/javascript" src="path/to/underscore.js"></script>
-<script type="text/javascript" src="path/to/backbone.js"></script>
-<script type="text/javascript" src="path/to/d3.js"></script>
-
-<!-- include celestrium code -->
-<script type="text/javascript" src="path/to/celestrium.js"></script>
-<link rel="stylesheet" type="text/css" href="path/to/celestrium.css">
-
-```
-
-> TODO - Link to example repo using released files.
+See [celestrium-example](https://github.com/jdhenke/celestrium-example) for an example infrastructure.
 
 ## API
 
@@ -88,11 +69,7 @@ This allows you to reference your plugin by it's URI in `celestrium.init`.
 Your plugins, therefore, must be registered *before* being referenced in `celestrium.init`.
 It is therefore recommended to run `celestrium.init` after the page has loaded.
 
-### Default Plugins
-
-Here's how to use Celestrium's default plugins.
-
-#### DataProvider
+### DataProvider
 
 This is an abstract class definition which should be extended to allow the graph to be populated. Here's an example.
 
@@ -124,24 +101,6 @@ A `strength` attribute may also be defined for a link and must be between 0 and 
 The default value is 1.
 
 You can now reference your Data Provider implementation in `celestrium.init` with it's URI as the key and anything as it's value, typically `{}`.
-
-#### Graph
-
-#### Key Listener
-
-#### Layout
-
-#### Sliders
-
-#### Force Sliders
-
-#### Link Distribution
-
-#### Node Details
-
-#### Node Search
-
-#### Stats
 
 ## LICENSE
 
