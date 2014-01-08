@@ -4,14 +4,16 @@
 # and the displayed statistic will be updated
 class StatsView extends Backbone.View
 
+  @uri: "Stats"
+  @needs:
+    graphModel: "GraphModel"
+    layout: "Layout"
+
   constructor: (@options) ->
     super()
-
-  init: (instances) ->
     @render()
-    @graphModel = instances["GraphModel"]
     @listenTo @graphModel, "change", @update
-    instances["Layout"].addPlugin @el, @options.pluginOrder, 'Stats'
+    @layout.addPlugin @el, @options.pluginOrder, 'Stats'
 
   render: ->
     container = $("<div />").addClass("graph-stats-container").appendTo(@$el)
@@ -39,3 +41,5 @@ class StatsView extends Backbone.View
     @$table.append($row)
     return (newVal) ->
       $stat.text(newVal)
+
+celestrium.register StatsView

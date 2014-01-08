@@ -29,8 +29,6 @@ class LinkDistributionView extends Backbone.View
     @windowModel.set("window", 10)
     @listenTo @windowModel, "change:window", @paint
     super()
-
-  init: (instances) ->
     @listenTo @graphModel, "change:links", @paint
     scale = d3.scale.linear()
       .domain([2,200])

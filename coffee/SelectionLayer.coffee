@@ -1,8 +1,11 @@
 class SelectionLayer
 
-  init: (instances) ->
-    @graphView = instances.GraphView
-    @nodeSelection = instances.NodeSelection
+  @uri: "SelectionLayer"
+  @needs:
+    graphView: "GraphView"
+    nodeSelection: "NodeSelection"
+
+  constructor: () ->
     @$parent = @graphView.$el
     _.extend this, Backbone.Events
 
@@ -120,3 +123,5 @@ class SelectionLayer
     dim = @rectDim startPoint, endPoint
     ctx = @canvas.getContext '2d'
     ctx.clearRect dim.x, dim.y, dim.width, dim.height
+
+celestrium.register SelectionLayer
