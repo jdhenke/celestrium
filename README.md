@@ -106,7 +106,7 @@ You can now reference your Data Provider implementation in `celestrium.init` wit
 
     The MIT License (MIT)
 
-    Copyright (c) 2013 Joseph Henke
+    Copyright (c) 2014 Joseph Henke
 
     Permission is hereby granted, free of charge, to any person obtaining a copy of
     this software and associated documentation files (the "Software"), to deal in
