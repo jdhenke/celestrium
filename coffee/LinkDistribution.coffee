@@ -20,7 +20,6 @@ class LinkDistributionView extends Backbone.View
     graphModel: "GraphModel"
     graphView: "GraphView"
     sliders: "Sliders"
-    layout: "Layout"
 
   className: "link-pdf"
 
@@ -28,7 +27,7 @@ class LinkDistributionView extends Backbone.View
     @windowModel = new Backbone.Model()
     @windowModel.set("window", 10)
     @listenTo @windowModel, "change:window", @paint
-    super()
+    super(@options)
     @listenTo @graphModel, "change:links", @paint
     scale = d3.scale.linear()
       .domain([2,200])
@@ -37,9 +36,6 @@ class LinkDistributionView extends Backbone.View
       scale(@windowModel.get("window")), (val) =>
         @windowModel.set "window", scale.invert(val)
     @render()
-    @layout.addPlugin @el,
-      @options.pluginOrder,
-      'Link Distribution'
 
   render: ->
 

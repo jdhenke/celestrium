@@ -1,10 +1,13 @@
 # fires down:key1:key2... with all currently down keys on keydowns
 
+# TODO: release state on loss of window focus
+
 class KeyListener
 
   @uri: "KeyListener"
 
-  constructor: (target) ->
+  constructor: () ->
+    target = document.querySelector "body"
     _.extend this, Backbone.Events
     state = {}
     watch = [17, 65, 27, 46, 13, 16, 80, 187, 191]

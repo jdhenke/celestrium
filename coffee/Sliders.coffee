@@ -15,13 +15,10 @@ sliders have range [0, 100]
 class SlidersView extends Backbone.View
 
   @uri: "Sliders"
-  @needs:
-    layout: "Layout"
 
   constructor: (@options) ->
-    super()
+    super(@options)
     @render()
-    @layout.addPlugin @el, @options.pluginOrder, 'Sliders'
 
   render: () ->
     $container = $ """

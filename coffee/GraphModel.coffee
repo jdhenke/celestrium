@@ -3,9 +3,12 @@ class GraphModel extends Backbone.Model
   @uri: "GraphModel"
 
   initialize: ->
-    @set "nodes", []
-    @set "links", []
-    @set "nodeSet", {}
+    @set
+      "nodes": []
+      "links": []
+      "nodeSet": {}
+      "nodeHash": (node) -> node.text
+      "linkHash": (link) -> link.source.text + link.target.text
 
   getNodes: ->
     return @get "nodes"
