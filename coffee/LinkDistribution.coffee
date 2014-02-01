@@ -32,9 +32,9 @@ class LinkDistributionView extends Backbone.View
     scale = d3.scale.linear()
       .domain([2,200])
       .range([0, 100])
-    @sliders.addSlider "Smoothing",
-      scale(@windowModel.get("window")), (val) =>
-        @windowModel.set "window", scale.invert(val)
+    # @sliders.addSlider "Smoothing",
+    #   scale(@windowModel.get("window")), (val) =>
+    #     @windowModel.set "window", scale.invert(val)
     @render()
 
   render: ->
