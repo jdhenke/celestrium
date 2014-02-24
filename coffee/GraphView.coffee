@@ -18,9 +18,8 @@ class GraphView extends Backbone.View
   @needs:
     model: "GraphModel"
 
-  constructor: () ->
-    super
-      el: document.querySelector "#graph"
+  constructor: (@options) ->
+    super(@options)
     @model.on "change", @update.bind(this)
     @render()
 
