@@ -16,13 +16,11 @@ class GraphView extends Backbone.View
 
   @uri: "GraphView"
   @needs:
-    layout: "Layout"
     model: "GraphModel"
 
-  constructor: () ->
-    super()
+  constructor: (@options) ->
+    super(@options)
     @model.on "change", @update.bind(this)
-    @layout.addCenter @el
     @render()
 
   initialize: (options) ->
@@ -32,8 +30,8 @@ class GraphView extends Backbone.View
     @listenTo @linkFilter, "change:threshold", @update
 
   render: ->
-    initialWindowWidth = $(window).width()
-    initialWindowHeight = $(window).height()
+    initialWindowWidth = @$el.width()
+    initialWindowHeight = @$el.height()
     @force = d3.layout.force()
       .size([initialWindowWidth, initialWindowHeight])
       .charge(-500)
