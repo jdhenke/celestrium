@@ -18,7 +18,7 @@ class GraphModel extends Backbone.Model
 
   putNode: (node) ->
     # ignore if node is already in this graph
-    return  if @get("nodeSet")[@get("nodeHash")(node)]
+    return if @hasNode(node)
 
     # modify node to have attribute accessor functions
     nodeAttributes = @get("nodeAttributes")
@@ -30,10 +30,16 @@ class GraphModel extends Backbone.Model
     @trigger "add:node", node
     @pushDatum "nodes", node
 
+  hasNode: (node) ->
+    return @get("nodeSet")[@get("nodeHash")(node)]?
+
   putLink: (link) ->
     link.strength ?= 1
     @pushDatum "links", link
     @trigger "add:link", link
+
+  linkHash: (link) ->
+    @get("linkHash")(link)
 
   pushDatum: (attr, datum) ->
     data = @get(attr)
