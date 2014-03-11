@@ -16,6 +16,9 @@ class GraphModel extends Backbone.Model
   getLinks: ->
     return @get "links"
 
+  hasNode: (node) ->
+    return @get("nodeSet")[@get("nodeHash")(node)]?
+
   putNode: (node) ->
     # ignore if node is already in this graph
     return if @hasNode(node)
