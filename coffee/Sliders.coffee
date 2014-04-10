@@ -41,7 +41,7 @@ class SlidersView extends Backbone.View
 
     $row.find("input")
       .val(initialValue)
-      .on "change", () ->
+      .on "input", () ->
         val = $(this).val()
         onChange(val)
         $(this).blur()
