@@ -327,6 +327,18 @@ class GraphView extends Backbone.View
       .append("path")
         .attr("d", "M 10 0 L 0 5 L 10 10 z")
 
+    # add standard styling
+    style = $("
+    <style>
+      .nodeContainer .node text { opacity: 0.5; }
+      .nodeContainer .selected circle { fill: steelblue; }
+      .nodeContainer .node:hover text { opacity: 1; }
+      .nodeContainer:hover { cursor: pointer; }
+      .linkContainer .link { stroke: gray; opacity: 0.5; }
+    </style>
+    ")
+    $("html > head").append(style)
+
     # outermost wrapper - this is used to capture all zoom events
     zoomCapture = svg.append("g")
 
@@ -614,6 +626,24 @@ class LinkDistributionView extends Backbone.View
     @svg.append("g")
       .classed("pdfs", true)
 
+    # add standard styling
+    style = $("
+    <style>
+      .pdf { margin-left: auto; margin-right: auto; width: 200px; }
+      .pdf .axis text { font-size: 6pt; }
+      .pdf .axis path, .pdf .axis line {
+        fill: none; stroke: #000; shape-rendering: crispEdges;
+      }
+      .pdf .axis .label { font-size: 10pt; text-anchor: middle; }
+      .pdf path { fill: steelblue; }
+      .pdf .threshold-line {
+        stroke: #000; stroke-width: 2px; cursor: ew-resize;
+      }
+      .pdf.drag { cursor: ew-resize; }
+    </style>
+    ")
+    $("html > head").append(style)
+
     # scale mapping link strength to x coordinate in workspace
     @x = d3.scale.linear()
       .domain([minStrength, maxStrength])
@@ -659,10 +689,11 @@ class LinkDistributionView extends Backbone.View
       $line = @$(".threshold-line")
       pageX = e.pageX
       originalX = parseInt $line.attr("x1")
-      d3.select(@el).classed("drag", true)
-      $(window).one "mouseup", () =>
+      # TODO: don't use a global selector
+      d3.select(".pdf").classed("drag", true)
+      $(window).one "mouseup", () ->
         $(window).off "mousemove", moveListener
-        d3.select(@el).classed("drag", false)
+        d3.select(".pdf").classed("drag", false)
       moveListener = (e) =>
         @paint()
         dx = e.pageX - pageX
@@ -797,51 +828,6 @@ class NodeDetailsView extends Backbone.View
         $("""
           <div class=\"node-profile-property\">#{property}:  #{value}</div>
         """).appendTo $nodeDiv  if blacklist.indexOf(property) < 0
-
-# provides an input box which can add nodes to the graph
-
-class NodeSearch extends Backbone.View
-
-  @uri: "NodeSearch"
-  @needs:
-    graphModel: "GraphModel"
-    keyListener: "KeyListener"
-    layout: "Layout"
-
-  events:
-    "typeahead:selected input": "addNode"
-
-  constructor: (@options) ->
-    super()
-    @listenTo @keyListener, "down:191", (e) =>
-      @$("input").focus()
-      e.preventDefault()
-    @render()
-    @layout.addPlugin @el, @options.pluginOrder, 'Search'
-
-  render: ->
-    $container = $("<div />").addClass("node-search-container")
-    $input = $("<input type=\"text\" placeholder=\"Node Search...\">")
-      .addClass("node-search-input")
-    $container.append $input
-    @$el.append $container
-    $input.typeahead
-      prefetch: @options.prefetch
-      local: @options.local
-      name: "nodes"
-      limit: 100
-    return this
-
-  addNode: (e, datum) ->
-    newNode = text: datum.value
-    h = @graphModel.get("nodeHash")
-    newNodeHash = h(newNode)
-    nodeWithHashExists = _.some @graphModel.get("nodes"), (node) ->
-      h(node) is newNodeHash
-    @graphModel.putNode newNode unless nodeWithHashExists
-    $(e.target).blur()
-
-celestrium.register NodeSearch
 
 class NodeSelection
 
@@ -1162,7 +1148,7 @@ class SlidersView extends Backbone.View
 
     $row.find("input")
       .val(initialValue)
-      .on "change", () ->
+      .on "input", () ->
         val = $(this).val()
         onChange(val)
         $(this).blur()

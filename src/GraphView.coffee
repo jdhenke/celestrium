@@ -72,6 +72,18 @@ class GraphView extends Backbone.View
       .append("path")
         .attr("d", "M 10 0 L 0 5 L 10 10 z")
 
+    # add standard styling
+    style = $("
+    <style>
+      .nodeContainer .node text { opacity: 0.5; }
+      .nodeContainer .selected circle { fill: steelblue; }
+      .nodeContainer .node:hover text { opacity: 1; }
+      .nodeContainer:hover { cursor: pointer; }
+      .linkContainer .link { stroke: gray; opacity: 0.5; }
+    </style>
+    ")
+    $("html > head").append(style)
+
     # outermost wrapper - this is used to capture all zoom events
     zoomCapture = svg.append("g")
 

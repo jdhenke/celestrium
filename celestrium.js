@@ -1,5 +1,5 @@
 (function() {
-  var Celestrium, DataProvider, DependencyProvider, ForceSliders, GraphModel, GraphView, KeyListener, Layout, LinkDistributionView, LinkFilter, NodeDetailsView, NodeSearch, NodeSelection, PluginWrapper, SelectionLayer, SlidersView, StaticProvider, StatsView, height, margin, maxStrength, minStrength, width, _ref, _ref1, _ref2, _ref3,
+  var Celestrium, DataProvider, DependencyProvider, ForceSliders, GraphModel, GraphView, KeyListener, Layout, LinkDistributionView, LinkFilter, NodeDetailsView, NodeSelection, PluginWrapper, SelectionLayer, SlidersView, StaticProvider, StatsView, height, margin, maxStrength, minStrength, width, _ref, _ref1, _ref2, _ref3,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -394,7 +394,7 @@
     };
 
     GraphView.prototype.render = function() {
-      var currentZoom, defs, initialWindowHeight, initialWindowWidth, linkContainer, nodeContainer, svg, translateLock, workspace, zoom, zoomCapture,
+      var currentZoom, defs, initialWindowHeight, initialWindowWidth, linkContainer, nodeContainer, style, svg, translateLock, workspace, zoom, zoomCapture,
         _this = this;
       initialWindowWidth = this.$el.width();
       initialWindowHeight = this.$el.height();
@@ -408,6 +408,8 @@
       defs = svg.append("defs");
       defs.append("marker").attr("id", "Triangle").attr("viewBox", "0 0 20 15").attr("refX", "15").attr("refY", "5").attr("markerUnits", "userSpaceOnUse").attr("markerWidth", "20").attr("markerHeight", "15").attr("orient", "auto").append("path").attr("d", "M 0 0 L 10 5 L 0 10 z");
       defs.append("marker").attr("id", "Triangle2").attr("viewBox", "0 0 20 15").attr("refX", "-5").attr("refY", "5").attr("markerUnits", "userSpaceOnUse").attr("markerWidth", "20").attr("markerHeight", "15").attr("orient", "auto").append("path").attr("d", "M 10 0 L 0 5 L 10 10 z");
+      style = $("    <style>      .nodeContainer .node text { opacity: 0.5; }      .nodeContainer .selected circle { fill: steelblue; }      .nodeContainer .node:hover text { opacity: 1; }      .nodeContainer:hover { cursor: pointer; }      .linkContainer .link { stroke: gray; opacity: 0.5; }    </style>    ");
+      $("html > head").append(style);
       zoomCapture = svg.append("g");
       zoomCapture.append("svg:rect").attr("width", "100%").attr("height", "100%").style("fill-opacity", "0%");
       translateLock = false;
@@ -697,10 +699,12 @@
     LinkDistributionView.prototype.render = function() {
       /* one time setup of link strength pdf view*/
 
-      var bottom, thresholdX, xAxis,
+      var bottom, style, thresholdX, xAxis,
         _this = this;
       this.svg = d3.select(this.el).append("svg").classed("pdf", true).attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom).append("g").classed("workspace", true).attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       this.svg.append("g").classed("pdfs", true);
+      style = $("    <style>      .pdf { margin-left: auto; margin-right: auto; width: 200px; }      .pdf .axis text { font-size: 6pt; }      .pdf .axis path, .pdf .axis line {        fill: none; stroke: #000; shape-rendering: crispEdges;      }      .pdf .axis .label { font-size: 10pt; text-anchor: middle; }      .pdf path { fill: steelblue; }      .pdf .threshold-line {        stroke: #000; stroke-width: 2px; cursor: ew-resize;      }      .pdf.drag { cursor: ew-resize; }    </style>    ");
+      $("html > head").append(style);
       this.x = d3.scale.linear().domain([minStrength, maxStrength]).range([0, width]);
       xAxis = d3.svg.axis().scale(this.x).orient("bottom");
       bottom = this.svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")");
@@ -717,10 +721,10 @@
         $line = _this.$(".threshold-line");
         pageX = e.pageX;
         originalX = parseInt($line.attr("x1"));
-        d3.select(_this.el).classed("drag", true);
+        d3.select(".pdf").classed("drag", true);
         $(window).one("mouseup", function() {
           $(window).off("mousemove", moveListener);
-          return d3.select(_this.el).classed("drag", false);
+          return d3.select(".pdf").classed("drag", false);
         });
         moveListener = function(e) {
           var dx, newX;
@@ -860,70 +864,6 @@
     return NodeDetailsView;
 
   })(Backbone.View);
-
-  NodeSearch = (function(_super) {
-    __extends(NodeSearch, _super);
-
-    NodeSearch.uri = "NodeSearch";
-
-    NodeSearch.needs = {
-      graphModel: "GraphModel",
-      keyListener: "KeyListener",
-      layout: "Layout"
-    };
-
-    NodeSearch.prototype.events = {
-      "typeahead:selected input": "addNode"
-    };
-
-    function NodeSearch(options) {
-      var _this = this;
-      this.options = options;
-      NodeSearch.__super__.constructor.call(this);
-      this.listenTo(this.keyListener, "down:191", function(e) {
-        _this.$("input").focus();
-        return e.preventDefault();
-      });
-      this.render();
-      this.layout.addPlugin(this.el, this.options.pluginOrder, 'Search');
-    }
-
-    NodeSearch.prototype.render = function() {
-      var $container, $input;
-      $container = $("<div />").addClass("node-search-container");
-      $input = $("<input type=\"text\" placeholder=\"Node Search...\">").addClass("node-search-input");
-      $container.append($input);
-      this.$el.append($container);
-      $input.typeahead({
-        prefetch: this.options.prefetch,
-        local: this.options.local,
-        name: "nodes",
-        limit: 100
-      });
-      return this;
-    };
-
-    NodeSearch.prototype.addNode = function(e, datum) {
-      var h, newNode, newNodeHash, nodeWithHashExists;
-      newNode = {
-        text: datum.value
-      };
-      h = this.graphModel.get("nodeHash");
-      newNodeHash = h(newNode);
-      nodeWithHashExists = _.some(this.graphModel.get("nodes"), function(node) {
-        return h(node) === newNodeHash;
-      });
-      if (!nodeWithHashExists) {
-        this.graphModel.putNode(newNode);
-      }
-      return $(e.target).blur();
-    };
-
-    return NodeSearch;
-
-  })(Backbone.View);
-
-  celestrium.register(NodeSearch);
 
   NodeSelection = (function() {
     NodeSelection.uri = "NodeSelection";
@@ -1276,7 +1216,7 @@
     SlidersView.prototype.addSlider = function(label, initialValue, onChange) {
       var $row;
       $row = $("<tr>\n  <td class=\"slider-label\">" + label + ": </td>\n  <td><input type=\"range\" min=\"0\" max=\"100\"></td>\n</tr>");
-      $row.find("input").val(initialValue).on("change", function() {
+      $row.find("input").val(initialValue).on("input", function() {
         var val;
         val = $(this).val();
         onChange(val);

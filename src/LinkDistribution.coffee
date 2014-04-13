@@ -47,6 +47,24 @@ class LinkDistributionView extends Backbone.View
     @svg.append("g")
       .classed("pdfs", true)
 
+    # add standard styling
+    style = $("
+    <style>
+      .pdf { margin-left: auto; margin-right: auto; width: 200px; }
+      .pdf .axis text { font-size: 6pt; }
+      .pdf .axis path, .pdf .axis line {
+        fill: none; stroke: #000; shape-rendering: crispEdges;
+      }
+      .pdf .axis .label { font-size: 10pt; text-anchor: middle; }
+      .pdf path { fill: steelblue; }
+      .pdf .threshold-line {
+        stroke: #000; stroke-width: 2px; cursor: ew-resize;
+      }
+      .pdf.drag { cursor: ew-resize; }
+    </style>
+    ")
+    $("html > head").append(style)
+
     # scale mapping link strength to x coordinate in workspace
     @x = d3.scale.linear()
       .domain([minStrength, maxStrength])
@@ -92,10 +110,11 @@ class LinkDistributionView extends Backbone.View
       $line = @$(".threshold-line")
       pageX = e.pageX
       originalX = parseInt $line.attr("x1")
-      d3.select(@el).classed("drag", true)
-      $(window).one "mouseup", () =>
+      # TODO: don't use a global selector
+      d3.select(".pdf").classed("drag", true)
+      $(window).one "mouseup", () ->
         $(window).off "mousemove", moveListener
-        d3.select(@el).classed("drag", false)
+        d3.select(".pdf").classed("drag", false)
       moveListener = (e) =>
         @paint()
         dx = e.pageX - pageX
