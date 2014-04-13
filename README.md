@@ -3,7 +3,44 @@ Celestrium
 
 Easily create graph visualization and exploration interfaces on the web.
 
-See [celestrium-example](https://github.com/jdhenke/celestrium-example) for an example infrastructure.
+## Setup
+
+The typical setup for using Celestrium is to add it as a git submodule of your repo.
+
+```bash
+# add this repo as a submodule
+git submodule add https://github.com/jdhenke/celestrium.git ./celestrium
+
+# install node packages required to build the full script
+(cd celestrium && npm install)
+```
+
+Celestrium doesn't commit the compiled script itself - it must be built.
+To do this, make sure you have `grunt-cli` installed globally, then simply run
+
+```bash
+(cd celestrium && grunt)
+```
+
+If you are making changes to celestrium, you might want to use the grunt task which watches for changes in files and automatically triggers the build.
+```bash
+(cd celestrium && grunt watch)
+```
+
+These will generate `celestrium.js`, `celestrium.js.map` and `celestrium.src.coffee` in `celestrium`.
+
+Here is an example of a way to structure a repo which uses celestrium.
+
+    repo/
+      celestrium/      # git submodule inside repo
+        ...
+      index.html
+      js/
+        celestrium.js  # symbolic link to ../celestrium/celestrium.js
+
+You can also link `celestrium.js.map` and `celestrium.src.coffee`.
+
+See [celestrium-example](https://github.com/jdhenke/celestrium-example) for a working example.
 
 ## API
 
@@ -62,7 +99,7 @@ It defines which attributes to assign instances of other plugins.
 The attributes will be available to the plugin instance, even in the constructor.
 
 The **constructor** is optional, and will be provided a single argument - the value for it's URI key in the dictionary passed to `celestrium.init`.
-These are typically things which are specific to an impelementation.
+These are typically things which are specific to an implementation.
 
 To use your plugin, you are required to call `celestrium.register` with the class definition as the argument.
 This allows you to reference your plugin by it's URI in `celestrium.init`.
@@ -71,33 +108,4 @@ It is therefore recommended to run `celestrium.init` after the page has loaded.
 
 ### DataProvider
 
-This is an abstract class definition which should be extended to allow the graph to be populated. Here's an example.
-
-```coffeescript
-
-# define an implementation of DataProvider
-class ExampleDataProvider extends celestrium.defs["DataProvider"]
-
-  @uri: "ExampleDataProvider"
-
-  # calls callback with nodes adjacent to any node in nodes
-  getNeighbors: (nodes, callback) ->
-
-  # calls callback with links between node and nodes
-  getLinks: (node, nodes, callback) ->
-
-celestrium.register ExampleDataProvider
-
-```
-
-The **getNeighbors** function must call `callback` with an array of node objects for each node adjacent to any node in `nodes`.
-Node objects are javascript objects and should not conflict with [d3's attributes](https://github.com/mbostock/d3/wiki/Force-Layout#wiki-nodes).
-Additionally, a `text` attribute should be defined as the text to be displayed next to the node in the graph.
-
-The **getLinks** function must call its `callback` with an array of link objects, `A`, st. `A[i]` is the link object for the link from `node` to `nodes[i]`.
-`null` values are ignored.
-Node objects are javascript objects and should not conflict with [d3's attributes](https://github.com/mbostock/d3/wiki/Force-Layout#wiki-links) - DataProvider automatically assigns each link's source and target per this specification.
-A `strength` attribute may also be defined for a link and must be between 0 and 1.
-The default value is 1.
-
-You can now reference your Data Provider implementation in `celestrium.init` with it's URI as the key and anything as it's value, typically `{}`.
+TODO
