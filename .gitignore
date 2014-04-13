@@ -17,3 +17,8 @@ node_modules
 
 # mac finder
 .DS_Store
+
+# compiled output
+celestrium.js
+celestrium.js.map
+celestrium.src.coffee
