@@ -13,9 +13,9 @@ height = 200 - margin.top - margin.bottom
 minStrength = 0
 maxStrength = 1
 
-class LinkDistributionView extends Backbone.View
+class LinkDistro extends Backbone.View
 
-  @uri: "LinkDistribution"
+  @uri: "LinkDistro"
   @needs:
     graphModel: "GraphModel"
     graphView: "GraphView"
@@ -219,4 +219,4 @@ class LinkDistributionView extends Backbone.View
       .attr("d", area)
       .style("opacity", (d) -> d.opacity)
 
-celestrium.register LinkDistributionView
+celestrium.register LinkDistro
