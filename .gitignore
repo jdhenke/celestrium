@@ -17,6 +17,3 @@ node_modules
 
 # mac finder
 .DS_Store
-
-# javascript output folders
-dist

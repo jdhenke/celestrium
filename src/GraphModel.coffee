@@ -33,9 +33,6 @@ class GraphModel extends Backbone.Model
     @trigger "add:node", node
     @pushDatum "nodes", node
 
-  hasNode: (node) ->
-    return @get("nodeSet")[@get("nodeHash")(node)]?
-
   putLink: (link) ->
     link.strength ?= 1
     @pushDatum "links", link
