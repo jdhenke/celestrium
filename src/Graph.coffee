@@ -1,33 +1,28 @@
+# makeshift collection class. triggers only "change" event. supports push() and
+# clear(). clear efficiently removes all elements from the array.
+MakeLightCollection = () ->
+  output = []
+  _.extend output, Backbone.Events
+  output.push = (obj) ->
+    Array.prototype.push.call(this, obj)
+    @trigger("change")
+  output.clear = (obj) ->
+    @length = 0
+    @trigger("change")
+  return output
+
 # renders the graph using d3's force directed layout
+class Graph extends Backbone.View
 
-class LinkFilter extends Backbone.Model
-  initialize: () ->
-    @set "threshold", 0.75
-  filter: (links) ->
-    return _.filter links, (link) =>
-      return link.strength > @get("threshold")
-  connectivity: (value) ->
-    if value
-      @set("threshold", value)
-    else
-      @get("threshold")
-
-class GraphView extends Backbone.View
-
-  @uri: "GraphView"
-  @needs:
-    model: "GraphModel"
+  @uri: "Graph"
 
   constructor: (@options) ->
     super(@options)
-    @model.on "change", @update.bind(this)
+    @nodes = MakeLightCollection()
+    @links = MakeLightCollection()
+    @listenTo @nodes, "change", @update
+    @listenTo @links, "change", @update
     @render()
-
-  initialize: (options) ->
-    # filter between model and visible graph
-    # use identify function if not defined
-    @linkFilter = new LinkFilter(this)
-    @listenTo @linkFilter, "change:threshold", @update
 
   render: ->
     initialWindowWidth = @$el.width()
@@ -36,10 +31,7 @@ class GraphView extends Backbone.View
       .size([initialWindowWidth, initialWindowHeight])
       .charge(-500)
       .gravity(0.2)
-    @linkStrength = (link) =>
-      return (link.strength - @linkFilter.get("threshold")) /
-        (1.0 - @linkFilter.get("threshold"))
-    @force.linkStrength @linkStrength
+
     svg = d3.select(@el).append("svg:svg").attr("pointer-events", "all")
     zoom = d3.behavior.zoom()
 
@@ -128,14 +120,14 @@ class GraphView extends Backbone.View
     return this
 
   update: ->
-    nodes = @model.get("nodes")
-    links = @model.get("links")
+    nodes = @nodes
+    links = @links
     filteredLinks = if @linkFilter then @linkFilter.filter(links) else links
     @force.nodes(nodes).links(filteredLinks).start()
     link = @linkSelection = d3.select(@el)
       .select(".linkContainer")
       .selectAll(".link")
-      .data(filteredLinks, @model.get("linkHash"))
+      .data filteredLinks, (link) -> link.source.text + link.target.text
     linkEnter = link.enter().append("line")
       .attr("class", "link")
       .attr('marker-end', (link) ->
@@ -151,7 +143,7 @@ class GraphView extends Backbone.View
     node = @nodeSelection = d3.select(@el)
       .select(".nodeContainer")
       .selectAll(".node")
-      .data(nodes, @model.get("nodeHash"))
+      .data nodes, (node) -> node.text
     nodeEnter = node.enter()
       .append("g")
       .attr("class", "node")
@@ -193,7 +185,4 @@ class GraphView extends Backbone.View
   getForceLayout: ->
     return @force
 
-  getLinkFilter: ->
-    return @linkFilter
-
-celestrium.register GraphView
+celestrium.register Graph

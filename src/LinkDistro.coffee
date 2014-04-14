@@ -17,8 +17,7 @@ class LinkDistro extends Backbone.View
 
   @uri: "LinkDistro"
   @needs:
-    graphModel: "GraphModel"
-    graphView: "GraphView"
+    graph: "Graph"
     sliders: "Sliders"
 
   className: "link-pdf"
@@ -28,7 +27,7 @@ class LinkDistro extends Backbone.View
     @windowModel.set("window", 10)
     @listenTo @windowModel, "change:window", @paint
     super(@options)
-    @listenTo @graphModel, "change:links", @paint
+    @listenTo @graph.links, "change", @paint
     @render()
 
   render: ->
@@ -96,7 +95,7 @@ class LinkDistro extends Backbone.View
       .classed("threshold-line", true)
 
     # x coordinate of threshold
-    thresholdX = @x(@graphView.getLinkFilter().get("threshold"))
+    thresholdX = @x(0.75)
 
     # draw initial line
     d3.select(@el).select(".threshold-line")
@@ -119,7 +118,7 @@ class LinkDistro extends Backbone.View
         @paint()
         dx = e.pageX - pageX
         newX = Math.min(Math.max(0, originalX + dx), width)
-        @graphView.getLinkFilter().set("threshold", @x.invert(newX))
+        # TODO: set new threshold using @x.invert(newX)
         $line.attr("x1", newX)
         $line.attr("x2", newX)
       $(window).on "mousemove", moveListener
@@ -139,7 +138,7 @@ class LinkDistro extends Backbone.View
       .bins(100) # determines the granularity of the display
 
     # raw distribution of link strengths
-    values = _.pluck @graphModel.getLinks(), "strength"
+    values = _.pluck @graph.links, "strength"
     sum = 0
     cdf = _.chain(layout(values))
       .map (bin) ->
@@ -186,7 +185,7 @@ class LinkDistro extends Backbone.View
 
     ###
 
-    threshold = @graphView.getLinkFilter().get("threshold")
+    threshold = 0.75
     visiblePDF = _.filter pdf, (bin) ->
       bin.x > threshold
     if visiblePDF.length > 0
