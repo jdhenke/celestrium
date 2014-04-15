@@ -5,6 +5,7 @@ MakeLightCollection = () ->
   _.extend output, Backbone.Events
   output.push = (obj) ->
     Array.prototype.push.call(this, obj)
+    @trigger("add", obj)
     @trigger("change")
   output.clear = (obj) ->
     @length = 0
@@ -121,8 +122,7 @@ class Graph extends Backbone.View
 
   update: ->
     nodes = @nodes
-    links = @links
-    filteredLinks = if @linkFilter then @linkFilter.filter(links) else links
+    filteredLinks = @links
     @force.nodes(nodes).links(filteredLinks).start()
     link = @linkSelection = d3.select(@el)
       .select(".linkContainer")
@@ -139,7 +139,7 @@ class Graph extends Backbone.View
 
     @force.start()
     link.exit().remove()
-    link.attr "stroke-width", (link) => 5 * (@linkStrength link)
+    link.attr "stroke-width", (link) -> 5 * link.strength
     node = @nodeSelection = d3.select(@el)
       .select(".nodeContainer")
       .selectAll(".node")
@@ -149,8 +149,8 @@ class Graph extends Backbone.View
       .attr("class", "node")
       .call(@force.drag)
     nodeEnter.append("text")
-         .attr("dx", 12)
-         .attr("dy", ".35em")
+         .attr("dy", "20px")
+         .style("text-anchor", "middle")
          .text (d) ->
            d.text
 

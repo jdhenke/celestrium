@@ -19,26 +19,33 @@ class DataSource
           savedClickSemaphore = clickSemaphore
           setTimeout (=>
             if clickSemaphore is savedClickSemaphore
-              _.each @graph.nodes, (node) ->
-                node.fixed = false
-              datum.x = $(window).width() / 2
-              datum.y = $(window).height() / 2
-              datum.fixed = true
+              @centerNode(datum)
             else
               # increment so second click isn't registered as a click
               clickSemaphore += 1
-              datum.fixed = false
           ), 250
         ).on "dblclick", (datum, index) =>
-          # TODO: do search around
-          @searchAround datum, (nodes, links) =>
-            _.each nodes, (node) => @graph.nodes.push(node)
-            _.each links, (link) => @graph.links.push(link)
+          @centerNode(datum)
+          @addNodes datum, (nodes) =>
+            _.each nodes, (node) =>
+              present = _.some @graph.nodes, (currentNode) ->
+                node.text == currentNode.text
+              if not present
+                @graph.nodes.push(node)
+    @graph.nodes.on "add", (node) =>
+      @addLinks node, (links) =>
+        _.each links, (link, i) =>
+          link.source = i
+          link.target = node
+          @graph.links.push(link)
 
-  # calls callback with these arguments
-  #  nodes - array of nodes, disjoint from current nodes
-  #  links - array of links, with source and target as indices
-  #          into original nodes + new nodes
-  searchAround: (node, callback) ->
+  centerNode: (centerNode) ->
+    _.each @graph.nodes, (node) ->
+      node.fixed = false
+    centerNode.x = $(window).width() / 2
+    centerNode.y = $(window).height() / 2
+    centerNode.fixed = true
+    @graph.getNodeSelection().classed "centered", (n) ->
+      n is centerNode
 
 celestrium.register DataSource

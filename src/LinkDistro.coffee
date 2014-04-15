@@ -23,11 +23,27 @@ class LinkDistro extends Backbone.View
   className: "link-pdf"
 
   constructor: (@options) ->
-    @windowModel = new Backbone.Model()
-    @windowModel.set("window", 10)
-    @listenTo @windowModel, "change:window", @paint
     super(@options)
-    @listenTo @graph.links, "change", @paint
+    @model = new Backbone.Model()
+    @model.set("threshold", 0.75)
+
+    getLinkStrength = (link) =>
+      if link.strength > @model.get("threshold")
+        newStrength = (link.strength - @model.get("threshold")) /
+                      (1.0 - @model.get("threshold"))
+        return Math.max(0, Math.min(1, newStrength))
+      else
+        return 0
+    update = () =>
+      @graph.getForceLayout().start()
+      @paint()
+      @graph.getLinkSelection().attr "stroke-width", (link) ->
+        5 * getLinkStrength(link)
+      @graph.force.start()
+
+    @graph.getForceLayout().linkStrength (link) -> getLinkStrength(link)
+    @model.on "change:threshold", update
+    @graph.on "enter:link", update
     @render()
 
   render: ->
@@ -118,9 +134,9 @@ class LinkDistro extends Backbone.View
         @paint()
         dx = e.pageX - pageX
         newX = Math.min(Math.max(0, originalX + dx), width)
-        # TODO: set new threshold using @x.invert(newX)
         $line.attr("x1", newX)
         $line.attr("x2", newX)
+        @model.set("threshold", @x.invert(newX))
       $(window).on "mousemove", moveListener
       e.preventDefault()
 
@@ -144,7 +160,7 @@ class LinkDistro extends Backbone.View
       .map (bin) ->
         "x": bin.x, "y": sum += bin.y
       .value()
-    halfWindow = Math.max 1, parseInt(@windowModel.get("window")/2)
+    halfWindow = 5
     pdf = _.map cdf, (bin, i) ->
       # get quantiles
       q1 = Math.max 0, i - halfWindow
@@ -185,9 +201,8 @@ class LinkDistro extends Backbone.View
 
     ###
 
-    threshold = 0.75
-    visiblePDF = _.filter pdf, (bin) ->
-      bin.x > threshold
+    visiblePDF = _.filter pdf, (bin) =>
+      bin.x > @model.get("threshold")
     if visiblePDF.length > 0
       i = pdf.length - visiblePDF.length
       if i > 0
@@ -195,7 +210,7 @@ class LinkDistro extends Backbone.View
       else
         y = pdf[i].y
       visiblePDF.unshift
-        "x": threshold
+        "x": @model.get("threshold")
         "y": y
 
     # set opacity on area, bad I know
