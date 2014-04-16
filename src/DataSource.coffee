@@ -44,6 +44,8 @@ class DataSource
       node.fixed = false
     centerNode.x = $(window).width() / 2
     centerNode.y = $(window).height() / 2
+    @graph.force.start()
+    @graph.force.tick()
     centerNode.fixed = true
     @graph.getNodeSelection().classed "centered", (n) ->
       n is centerNode
