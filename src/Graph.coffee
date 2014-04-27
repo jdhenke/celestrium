@@ -25,6 +25,9 @@ class Graph extends Backbone.View
     @listenTo @links, "change", @update
     @render()
 
+  linkViewFilter: (links) ->
+    return _.filter links, (link) -> link.strength > 0
+
   render: ->
     initialWindowWidth = @$el.width()
     initialWindowHeight = @$el.height()
@@ -122,7 +125,7 @@ class Graph extends Backbone.View
 
   update: ->
     nodes = @nodes
-    filteredLinks = @links
+    filteredLinks = @linkViewFilter @links
     @force.nodes(nodes).links(filteredLinks).start()
     link = @linkSelection = d3.select(@el)
       .select(".linkContainer")
@@ -139,7 +142,7 @@ class Graph extends Backbone.View
 
     @force.start()
     link.exit().remove()
-    link.attr "stroke-width", (link) -> 5 * link.strength
+    linkEnter.attr "stroke-width", (link) -> 5 * link.strength
     node = @nodeSelection = d3.select(@el)
       .select(".nodeContainer")
       .selectAll(".node")

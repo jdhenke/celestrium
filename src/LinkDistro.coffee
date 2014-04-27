@@ -26,25 +26,33 @@ class LinkDistro extends Backbone.View
     super(@options)
     @model = new Backbone.Model()
     @model.set("threshold", 0.75)
+    @graph.getForceLayout().linkStrength (link) => @getLinkStrength(link)
+    @graph.linkViewFilter = (links) =>
+      return _.filter links, (link) =>
+        link.strength > @model.get("threshold")
 
-    getLinkStrength = (link) =>
-      if link.strength > @model.get("threshold")
-        newStrength = (link.strength - @model.get("threshold")) /
-                      (1.0 - @model.get("threshold"))
-        return Math.max(0, Math.min(1, newStrength))
-      else
-        return 0
-    update = () =>
-      @graph.getForceLayout().start()
+    @graph.on "enter:link", (linkEnterSelection) =>
+      linkEnterSelection.attr "stroke-width", (link) =>
+        5 * @getLinkStrength(link)
       @paint()
-      @graph.getLinkSelection().attr "stroke-width", (link) ->
-        5 * getLinkStrength(link)
-      @graph.force.start()
-
-    @graph.getForceLayout().linkStrength (link) -> getLinkStrength(link)
-    @model.on "change:threshold", update
-    @graph.on "enter:link", update
+    @graph.links.on "change", () =>
+      @graph.linkSelection.attr "stroke-width", (link) =>
+        5 * @getLinkStrength(link)
+      @paint()
+    @model.on "change:threshold", () =>
+      @paint()
+      @graph.update()
+      @graph.linkSelection.attr "stroke-width", (link) =>
+        5 * @getLinkStrength(link)
     @render()
+
+  getLinkStrength: (link) =>
+    if link.strength > @model.get("threshold")
+      newStrength = (link.strength - @model.get("threshold")) /
+                    (1.0 - @model.get("threshold"))
+      return Math.max(0, Math.min(1, newStrength))
+    else
+      return 0
 
   render: ->
 
